@@ -38,6 +38,9 @@ constitution (`workspace/<repo>/.specify/memory/constitution.md`, managed via
   If it has no Spec Kit yet, run `specify init --here` inside it, then `/speckit-constitution`.
 - `workspace/*` is git-ignored by this root folder. Every git operation (branch, commit, push)
   runs **inside the target repo**, never at the root.
+  - **Exception (this project):** `workspace/frontend` is tracked by the root repo. It was merged
+    in with its full history on 2026-10-06, so its git operations run at the root and its
+    feature branches are root branches. Its own `.gitignore` still applies inside it.
 - Each ticket is resolved to a target repo first. Spec Kit commands, specs, branches, and
   verify commands all run inside `workspace/<repo>/`.
 - A ticket spanning several repos: one spec per repo (in each repo's `specs/`), each linking to
