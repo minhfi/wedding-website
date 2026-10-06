@@ -265,3 +265,41 @@ log reflect the edit.
 - Go-live date is not fixed; suggested before 15/12/2026 so the link can go out with invitations.
 - Visual direction is proposed by the team and approved by the owner before UI build starts (no
   Figma).
+
+## Implementation notes
+
+### Visual direction (T004 — approved by owner 2026-10-06)
+
+Concept **"Cành hoa" (the stem)**: taken from the bridal bouquet. A thin 1px leaf-green stem runs
+down the left edge of the page; each section heading sits on a small round bud on that stem. This
+is the single bold element; everything else stays quiet.
+
+**Color tokens** (contrast measured on `canh-hoa` background):
+
+| Token | Hex | Role | Contrast |
+|---|---|---|---|
+| `canh-hoa` | `#FBFAF5` | page background | – |
+| `lua` | `#F0F3E8` | input/QR surface, highlighted suggestion | – |
+| `nu` | `#DDE9C6` | selected choice background (text `la-dam` 5.97:1) | – |
+| `la-non` | `#86AD55` | stem line and buds only, decorative, never text or required borders | 2.47:1 |
+| `la-dam` | `#3E5C2B` | buttons (white text 7.58:1), links, accent text | 7.25:1 |
+| `da` | `#5B635C` | secondary text, input borders | 5.94:1 |
+| `than` | `#2B302C` | primary text | 12.87:1 |
+
+**Typography**: Noto Serif Display 200 (couple names ~60px at 360px, "và" 36px in `la-dam`) and 300
+(section headings ~26px); Be Vietnam Pro 400/500 for body (15–18px). Both loaded with the
+`vietnamese` subset.
+
+**Layout (360px)**: content left-aligned, 24px outer gutter, content indented to 44px from the stem.
+1. Cover: full-bleed photo 4:5.
+2. Names stacked "Minh Phi / và / Mỹ Ngân", overlapping the bottom ~56px of the cover; below them
+   "Chủ nhật, 17.01.2027" + time (500), then the lunar line in `da`.
+3. Countdown as a sentence: "Còn N ngày N giờ N phút nữa" (no digit boxes).
+4. Party: bud + heading, venue name, address, rounded map embed, "Mở bản đồ" link.
+5. Bus: two lines "Chiều đi: đón tại … lúc …" / "Chiều về: khởi hành từ … lúc …".
+6. RSVP: Tên/SĐT pill toggle, input with suggestion list, two large choice buttons ("Có, mình sẽ
+   đến" / "Không đến được"), conditional people/seat fields, full-width primary "Gửi xác nhận".
+7. Gift: one QR on `lua` surface with account holder and bank name.
+
+Motion: none beyond responses to user actions; respect `prefers-reduced-motion`. Radius: 10px for
+controls, pills for the Tên/SĐT toggle.
