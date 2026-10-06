@@ -24,6 +24,8 @@
   /* Layout */
   --spacing-gutter: 1.5rem;
   --spacing-stem: 2.75rem;
+  /* Distance from the stem line to the content edge (stem - gutter); used to centre buds on the stem. */
+  --spacing-bud: 1.25rem;
 
   /* Radius */
   --radius-control: 10px;
