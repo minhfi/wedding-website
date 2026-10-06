@@ -31,14 +31,17 @@
   --spacing-bouquet-bottom: 12%;
   --spacing-bouquet-w: 84%;
   /* Desktop hero: caps the arched cover (4:5, inset by the gutter) at ~55dvh tall so cover, names,
-     date and countdown fit one screen in the sticky left column. */
+     date and countdown fit one screen in the sticky left column, inside its panel (gutter above,
+     below and at the panel's bottom). */
   --container-hero-cover: min(
     calc(44dvh + 2 * var(--spacing-gutter)),
-    calc((100dvh - 24rem) * 0.8 + 2 * var(--spacing-gutter))
+    calc((100dvh - 28.5rem) * 0.8 + 2 * var(--spacing-gutter))
   );
 
   /* Radius */
   --radius-control: 10px;
+  /* Desktop hero panel behind the sticky left column. */
+  --radius-panel: 2.5rem;
 }
 
 /* Font families point at the CSS variables exposed by next/font on <html>. */

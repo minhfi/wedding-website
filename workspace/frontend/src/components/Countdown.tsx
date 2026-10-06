@@ -47,7 +47,7 @@ export function Countdown({ targetIso = siteConfig.eventAt }: CountdownProps) {
     <p
       data-testid="countdown"
       aria-live="off"
-      className="inline-flex rounded-full border border-nu bg-lua px-4 py-2 text-body text-than"
+      className="inline-flex rounded-full border border-nu bg-lua px-4 lg:bg-canh-hoa py-2 text-body text-than"
     >
       {/* One inline wrapper, so the flex pill does not split text runs and drop their spaces. */}
       <span>{content}</span>

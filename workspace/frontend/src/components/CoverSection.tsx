@@ -10,7 +10,7 @@ type CoverSectionProps = {
 export function CoverSection({ src = siteConfig.cover.src }: CoverSectionProps) {
   return (
     <div className="mx-gutter mt-gutter">
-      <div className="relative aspect-4/5 overflow-hidden rounded-t-full rounded-b-control border border-nu bg-lua">
+      <div className="relative aspect-4/5 overflow-hidden rounded-t-full rounded-b-control border border-nu bg-lua lg:bg-canh-hoa">
         {src ? (
           <Image
             src={src}
