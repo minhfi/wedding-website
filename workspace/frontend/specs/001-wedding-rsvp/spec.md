@@ -335,6 +335,19 @@ left-aligned stem unchanged):
    cover, names, date and countdown; right column holds the stem and the remaining sections. Max
    content width ~1120 px, centred.
 
+### Background botanicals (approved by owner 2026-10-06, option A)
+
+The owner found the flat cream background plain. Chosen: large, very faint line-art branches,
+leaves and a few blooms from the same botanical kit reaching in from the page corners and side
+margins (option A of A/B/C). Rules:
+
+- Decorative only: `aria-hidden`, `pointer-events: none`, behind content, no motion.
+- Very low contrast (la-non leaves and la-dam outlines at roughly 10–20% opacity) so body text keeps
+  WCAG AA; never placed under the RSVP form controls on mobile (corners only on small screens).
+- Desktop (≥1024 px): bigger sprigs fill the wide side margins; the sticky hero column sits on a
+  soft `lua` panel (rounded, full column height) so the cover and names read as one card.
+- Stays fixed to the viewport (does not scroll), so it frames every part of the page.
+
 ### Key files
 
 | Area | Files |

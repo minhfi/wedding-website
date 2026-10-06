@@ -140,6 +140,14 @@ UI task rules above apply (agent-browser at 360/768/1280 + web-design-guidelines
 - [x] T042 MP-1 Stem draw-on animation in `src/app/globals.css` (+ stem component): one ~1.2 s draw on load via `stroke-dashoffset`/`scaleY`, `prefers-reduced-motion: reduce` → no animation; no layout shift.
 - [x] T043 MP-1 Verify the refinement with agent-browser (via next-dev-loop) at 360/768/1024/1280/1440 px against spec → Visual refinement; run web-design-guidelines on changed files; fix or record deviations; full verify (lint, typecheck, test, build).
 
+## Phase 8: Change — background botanicals (MP-1)
+
+**Reason**: owner feedback "thêm background cho đẹp… đơn điệu quá"; option A approved 2026-10-06
+(spec → Implementation notes → Background botanicals). UI task rules above apply.
+
+- [ ] T044 MP-1 TDD background decoration `src/components/BackgroundBotanicals.tsx` (+ test): fixed, full-viewport, `aria-hidden`, `pointer-events-none`, `-z-10` layer composed from `src/components/botanical/Botanicals.tsx` shapes (large branches/leaves/blooms) at ~10–20% opacity via token colors; corners only below 1024 px, side-margin sprigs at ≥1024 px; render it once in `src/app/page.tsx` (or layout) and add the desktop `lua` panel behind the sticky hero column; no hard-coded hex.
+- [ ] T045 MP-1 Verify T044 with agent-browser (via next-dev-loop) at 360/768/1024/1440 px: decoration visible but faint, never overlapping form controls on mobile, text contrast unchanged, no horizontal scroll; web-design-guidelines on changed files; full verify (lint, typecheck, test, build).
+
 ## Dependencies & Execution Order
 
 - **Setup** T001 → T002 → T003.
