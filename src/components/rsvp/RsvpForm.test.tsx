@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { submitRsvp } from "@/lib/api-client";
+import { getGuest, submitRsvp } from "@/lib/api-client";
 import type { ApiResult } from "@/lib/api-client";
 import type { GuestDetail, GuestSuggestion } from "@/lib/types";
 import { RsvpForm } from "./RsvpForm";
@@ -23,10 +23,16 @@ vi.mock("./GuestLookup", () => ({
 }));
 
 const mockedSubmit = vi.mocked(submitRsvp);
+const mockedGetGuest = vi.mocked(getGuest);
 
-function savedGuest(rsvp: GuestDetail["rsvp"]): GuestDetail {
-  return { id: AN.id, ten: AN.ten, rsvp, capNhatLuc: "2026-10-06T10:00:00+07:00" };
+function savedGuest(
+  rsvp: GuestDetail["rsvp"],
+  capNhatLuc: string | null = "2026-11-02 20:15:03",
+): GuestDetail {
+  return { id: AN.id, ten: AN.ten, rsvp, capNhatLuc };
 }
+
+const NOT_ANSWERED: GuestDetail = { id: AN.id, ten: AN.ten, rsvp: null, capNhatLuc: null };
 
 function deferred<T>() {
   let resolve: (value: T) => void = () => {};
@@ -36,8 +42,14 @@ function deferred<T>() {
   return { promise, resolve };
 }
 
+function clickSelect(user: ReturnType<typeof userEvent.setup>) {
+  return user.click(screen.getByRole("button", { name: "Chọn khách mẫu" }));
+}
+
+/** Selects the guest and waits until the guest's details have loaded. */
 async function selectGuest(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole("button", { name: "Chọn khách mẫu" }));
+  await clickSelect(user);
+  await screen.findByRole("button", { name: "Gửi xác nhận" });
 }
 
 async function fillAttending(user: ReturnType<typeof userEvent.setup>) {
@@ -63,6 +75,8 @@ function submitButton() {
 
 beforeEach(() => {
   mockedSubmit.mockReset();
+  mockedGetGuest.mockReset();
+  mockedGetGuest.mockResolvedValue({ ok: true, data: NOT_ANSWERED });
 });
 
 describe("RsvpForm", () => {
@@ -300,5 +314,187 @@ describe("RsvpForm", () => {
     await user.click(screen.getByRole("radio", { name: "Không đến được" }));
 
     expect(screen.queryByText("Vui lòng chọn có đi tiệc hay không")).not.toBeInTheDocument();
+  });
+});
+
+describe("RsvpForm pre-fill", () => {
+  it("loads the selected guest with a loading state and hides the fields meanwhile", async () => {
+    const pending = deferred<ApiResult<GuestDetail>>();
+    mockedGetGuest.mockReturnValue(pending.promise);
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await clickSelect(user);
+
+    expect(mockedGetGuest).toHaveBeenCalledWith("g1");
+    expect(screen.getByRole("status")).toHaveTextContent("Đang tải thông tin…");
+    expect(screen.getByText(/Bạn đang xác nhận cho:/)).toHaveTextContent("Nguyễn Văn An");
+    expect(screen.queryByRole("radiogroup", { name: "Bạn có đến dự tiệc không?" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Gửi xác nhận/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Đổi người" })).toBeEnabled();
+
+    pending.resolve({ ok: true, data: NOT_ANSWERED });
+    expect(await screen.findByRole("button", { name: "Gửi xác nhận" })).toBeInTheDocument();
+    expect(screen.queryByText("Đang tải thông tin…")).not.toBeInTheDocument();
+  });
+
+  it("shows an empty form with no note when the guest has not answered yet", async () => {
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await selectGuest(user);
+
+    expect(screen.getByRole("radio", { name: "Có, mình sẽ đến" })).not.toBeChecked();
+    expect(screen.getByRole("radio", { name: "Không đến được" })).not.toBeChecked();
+    expect(screen.queryByText(/Bạn đã xác nhận/)).not.toBeInTheDocument();
+  });
+
+  it("pre-fills an attending answer and shows when it was confirmed", async () => {
+    mockedGetGuest.mockResolvedValue({
+      ok: true,
+      data: savedGuest({ diTiec: "co", soNguoi: 3, gheXeDi: 2, gheXeVe: 0 }),
+    });
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await selectGuest(user);
+
+    expect(
+      screen.getByText("Bạn đã xác nhận lúc 2026-11-02 20:15:03, có thể sửa lại bên dưới"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Có, mình sẽ đến" })).toBeChecked();
+    expect(screen.getByLabelText("Số người đi tiệc")).toHaveValue(3);
+    const xeDi = screen.getByRole("radiogroup", { name: /Đi xe khách chiều đi/ });
+    expect(within(xeDi).getByRole("radio", { name: "Có" })).toBeChecked();
+    expect(screen.getByLabelText("Số ghế chiều đi")).toHaveValue(2);
+    const xeVe = screen.getByRole("radiogroup", { name: /Đi xe khách chiều về/ });
+    expect(within(xeVe).getByRole("radio", { name: "Không" })).toBeChecked();
+    expect(screen.queryByLabelText("Số ghế chiều về")).not.toBeInTheDocument();
+  });
+
+  it("pre-fills a not-attending answer, and lets the guest change it and submit", async () => {
+    mockedGetGuest.mockResolvedValue({ ok: true, data: savedGuest({ diTiec: "khong" }) });
+    mockedSubmit.mockResolvedValue({
+      ok: true,
+      data: savedGuest({ diTiec: "co", soNguoi: 3, gheXeDi: 2, gheXeVe: 0 }),
+    });
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await selectGuest(user);
+
+    expect(screen.getByRole("radio", { name: "Không đến được" })).toBeChecked();
+    expect(screen.queryByLabelText("Số người đi tiệc")).not.toBeInTheDocument();
+
+    await fillAttending(user);
+    await user.click(screen.getByRole("button", { name: "Gửi xác nhận" }));
+
+    expect(mockedSubmit).toHaveBeenCalledWith({
+      guestId: "g1",
+      diTiec: "co",
+      soNguoi: 3,
+      xeDi: true,
+      gheXeDi: 2,
+      xeVe: false,
+    });
+  });
+
+  it("uses a generic note when the answer has no confirmation time", async () => {
+    mockedGetGuest.mockResolvedValue({ ok: true, data: savedGuest({ diTiec: "khong" }, null) });
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await selectGuest(user);
+
+    expect(
+      screen.getByText("Bạn đã xác nhận trước đó, có thể sửa lại bên dưới"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a load error with 'Thử lại' that calls getGuest again", async () => {
+    mockedGetGuest
+      .mockResolvedValueOnce({ ok: false, code: "network", message: "Có lỗi kết nối, vui lòng thử lại" })
+      .mockResolvedValueOnce({ ok: true, data: savedGuest({ diTiec: "khong" }) });
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await clickSelect(user);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Có lỗi kết nối, vui lòng thử lại");
+    expect(screen.queryByRole("radiogroup", { name: "Bạn có đến dự tiệc không?" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Đổi người" })).toBeEnabled();
+
+    await user.click(screen.getByRole("button", { name: "Thử lại" }));
+
+    expect(mockedGetGuest).toHaveBeenCalledTimes(2);
+    expect(await screen.findByRole("radio", { name: "Không đến được" })).toBeChecked();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("'Đổi người' works while loading and after a load error", async () => {
+    const pending = deferred<ApiResult<GuestDetail>>();
+    mockedGetGuest.mockReturnValueOnce(pending.promise).mockResolvedValueOnce({
+      ok: false,
+      code: "network",
+      message: "Có lỗi kết nối, vui lòng thử lại",
+    });
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+
+    await clickSelect(user);
+    await user.click(screen.getByRole("button", { name: "Đổi người" }));
+    expect(screen.getByRole("button", { name: "Chọn khách mẫu" })).toBeInTheDocument();
+
+    await clickSelect(user);
+    await screen.findByRole("alert");
+    await user.click(screen.getByRole("button", { name: "Đổi người" }));
+    expect(screen.getByRole("button", { name: "Chọn khách mẫu" })).toBeInTheDocument();
+  });
+
+  it("ignores a stale response after the guest was changed", async () => {
+    const stale = deferred<ApiResult<GuestDetail>>();
+    mockedGetGuest
+      .mockReturnValueOnce(stale.promise)
+      .mockResolvedValueOnce({ ok: true, data: NOT_ANSWERED });
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+
+    await clickSelect(user);
+    await user.click(screen.getByRole("button", { name: "Đổi người" }));
+    await selectGuest(user);
+
+    stale.resolve({ ok: true, data: savedGuest({ diTiec: "khong" }) });
+    await stale.promise;
+
+    expect(screen.getByRole("radio", { name: "Không đến được" })).not.toBeChecked();
+    expect(screen.queryByText(/Bạn đã xác nhận/)).not.toBeInTheDocument();
+  });
+
+  it("after a submit, 'Sửa câu trả lời' shows the saved values and the new confirmation time", async () => {
+    mockedGetGuest.mockResolvedValue({
+      ok: true,
+      data: savedGuest({ diTiec: "khong" }, "2026-11-01 08:00:00"),
+    });
+    mockedSubmit.mockResolvedValue({
+      ok: true,
+      data: savedGuest({ diTiec: "co", soNguoi: 4, gheXeDi: 0, gheXeVe: 3 }, "2026-11-02 20:15:03"),
+    });
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await selectGuest(user);
+    expect(screen.getByText(/2026-11-01 08:00:00/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("radio", { name: "Có, mình sẽ đến" }));
+    await user.type(screen.getByLabelText("Số người đi tiệc"), "4");
+    await chooseBus(user, "đi", "Không");
+    await chooseBus(user, "về", "Có");
+    await user.type(screen.getByLabelText("Số ghế chiều về"), "3");
+    await user.click(screen.getByRole("button", { name: "Gửi xác nhận" }));
+
+    await user.click(await screen.findByRole("button", { name: "Sửa câu trả lời" }));
+
+    expect(
+      screen.getByText("Bạn đã xác nhận lúc 2026-11-02 20:15:03, có thể sửa lại bên dưới"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Có, mình sẽ đến" })).toBeChecked();
+    expect(screen.getByLabelText("Số người đi tiệc")).toHaveValue(4);
+    const xeDi = screen.getByRole("radiogroup", { name: /Đi xe khách chiều đi/ });
+    expect(within(xeDi).getByRole("radio", { name: "Không" })).toBeChecked();
+    expect(screen.getByLabelText("Số ghế chiều về")).toHaveValue(3);
+    expect(mockedGetGuest).toHaveBeenCalledTimes(1);
   });
 });
