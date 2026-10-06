@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-06
 
-**Status**: Draft
+**Status**: Implemented (pending manual checks T020, T028, T031, T034)
 
 **Input**: Jira [MP-1](https://minhfitech.atlassian.net/browse/MP-1) — single-page mobile-first wedding
 website for Nguyễn Minh Phi & Trần Thị Mỹ Ngân. Guests open one shared link, see event info, and
@@ -307,3 +307,59 @@ is the single bold element; everything else stays quiet.
 
 Motion: none beyond responses to user actions; respect `prefers-reduced-motion`. Radius: 10px for
 controls, pills for the Tên/SĐT toggle.
+
+### Key files
+
+| Area | Files |
+|---|---|
+| Page and layout | `src/app/page.tsx`, `src/app/layout.tsx`, `src/app/globals.css` (`@theme` tokens) |
+| Sections | `src/components/{CoverSection,CoupleDateSection,Countdown,PartyInfoSection,BusInfoSection,BusInfoView,GiftQrSection}.tsx` |
+| RSVP | `src/components/rsvp/{GuestLookup,RsvpFields,RsvpForm}.tsx` |
+| Routes | `src/app/api/guests/search/route.ts`, `src/app/api/guests/[id]/route.ts`, `src/app/api/rsvp/route.ts` |
+| Server-only | `src/lib/server/{apps-script,guests,bus-info}.ts` |
+| Shared logic | `src/lib/{types,normalize,rsvp-validation,countdown,api-client}.ts`, `src/config/site.ts` |
+| Sheet gateway | `apps-script/Code.gs` (pasted into the Sheet's Apps Script project, deployed as a Web app) |
+
+### Decisions and deviations from plan.md
+
+- **Countdown without seconds.** FR-003 originally said days/hours/minutes/seconds. The approved
+  visual direction shows a sentence ("Còn N ngày N giờ N phút nữa"), so FR-003 and US2 AC3 were
+  updated. It still recalculates every second.
+- **Bus section always renders at request time.** `BusInfoSection` calls `await connection()` before
+  `getBusInfo()`. Without it, Cache Components could bake an "unavailable" result into the static
+  shell. The data itself is still cached (`cacheLife({ stale: 60, revalidate: 240, expire: 3600 })`).
+  Failures are not cached: the cached inner fetch throws, the uncached wrapper returns `unavailable`.
+- **Errors across `'use cache'` lose their class.** An error thrown inside the cached guest index
+  reaches the route as a plain `Error`, so `searchGuests` re-wraps it as `AppsScriptError("upstream")`.
+- **Apps Script dates.** Sheets converts the written `cap_nhat_luc` / `thoi_gian` strings into Date
+  cells. `Code.gs` duck-types dates (`isDate`) because `instanceof Date` fails on values from the
+  Sheets service, then formats them `yyyy-MM-dd HH:mm:ss` in Asia/Ho_Chi_Minh. The UI shows them as
+  "HH:mm ngày dd/MM/yyyy".
+- **"Tải lại trang" link** points to `/?tai-lai=1#bus` (a different URL), because `/#bus` from `/`
+  only scrolls and would not reload.
+- **`priority` → `preload`** on the cover image (Next 16 deprecates `priority`).
+- **Token added:** `--text-body` (15px) and `--spacing-bud` (distance stem → content, used to centre
+  buds on the stem). No arbitrary color/size values in components.
+- **Copy differs slightly from the first spec draft** (now synced in FR-011/FR-012/US1): "Bạn có đến
+  dự tiệc không?" with "Có, mình sẽ đến" / "Không đến được"; "Đi xe khách chiều đi/về?"; toggle
+  "Tìm theo: Tên / SĐT"; success line "Số người đi tiệc: N".
+- **No `server-only` package.** Next.js handles `import "server-only"` itself; Vitest aliases it to a
+  stub.
+
+### Known limitations
+
+- Accepted risk (unchanged): guest names are visible through suggestions and anyone with the link can
+  change any RSVP; `LichSu` keeps every submission for review.
+- Apps Script cold calls can take a few seconds; the first suggestion after the guest index cache
+  expires may be slower than the 3 s target. Warm searches answer in ~30 ms.
+- Re-deploying `Code.gs` must use **Manage deployments → New version** to keep the same URL.
+- Copying `Code.gs` with `pbcopy` needs `LANG=en_US.UTF-8`, otherwise Vietnamese strings break.
+- Placeholder content still to replace: venue name/address/map, cover image, QR image, account holder
+  and bank name (`src/config/site.ts`, `public/`), bus pickup point/times (`CauHinh` tab).
+
+### Verification results
+
+- Automated: lint 0, typecheck 0, 335/335 tests (19 files), `pnpm build` OK (`/` partial prerender).
+- agent-browser on the real Sheet: V1–V8, V10–V12 passed (details in `tasks.md` → Build log).
+- Manual, pending owner confirmation: T020 / T031 (Sheet rows), T028 (bus info freshness),
+  T034 (Vercel deploy and real-phone check).
