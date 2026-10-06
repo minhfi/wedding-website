@@ -20,7 +20,7 @@ export function CoupleDateSection({ children }: CoupleDateSectionProps) {
         <span className="block">{groom.shortName}</span>{" "}
         <span className="flex items-center gap-3">
           <span className="text-names-join text-la-dam">và</span>
-          <LeafSprig className="text-la-non" />
+          <LeafSprig />
         </span>{" "}
         <span className="block">{bride.shortName}</span>
       </h1>

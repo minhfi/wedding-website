@@ -21,7 +21,7 @@ export function CoverSection({ src = siteConfig.cover.src }: CoverSectionProps) 
             className="object-cover"
           />
         ) : (
-          <Bouquet className="absolute inset-x-[8%] bottom-[12%] h-auto w-[84%]" />
+          <Bouquet className="absolute inset-x-bouquet-x bottom-bouquet-bottom h-auto w-bouquet-w" />
         )}
       </div>
     </div>

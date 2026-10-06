@@ -9,7 +9,8 @@ export async function BusInfoSection() {
   const result = await getBusInfo();
 
   return (
-    <BusSectionFrame>
+    // The skeleton already played the stem animation; the streamed-in section must not replay it.
+    <BusSectionFrame animate={false}>
       <BusInfoView result={result} />
     </BusSectionFrame>
   );

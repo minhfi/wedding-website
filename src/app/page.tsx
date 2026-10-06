@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <main className="mx-auto min-h-screen max-w-xl pb-16 lg:grid lg:max-w-6xl lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:items-start lg:gap-12 lg:px-gutter">
       {/* Hero: sticky left column on desktop. The cover width is capped so the whole hero fits one screen. */}
-      <div className="lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:justify-center">
+      <div className="lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:justify-center-safe">
         <div className="lg:max-w-hero-cover">
           <CoverSection />
         </div>

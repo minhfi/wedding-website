@@ -5,9 +5,9 @@ import type { BusInfoResult, BusTrip } from "@/lib/types";
 const EMPTY_TEXT = "Thông tin xe sẽ được cập nhật sau";
 
 /** Section frame shared by the loaded section and its Suspense fallback, so layout stays stable. */
-export function BusSectionFrame({ children }: { children: ReactNode }) {
+export function BusSectionFrame({ children, animate = true }: { children: ReactNode; animate?: boolean }) {
   return (
-    <SectionFrame id="bus" headingId="bus-heading" title="Xe khách" bloom="tulip">
+    <SectionFrame id="bus" headingId="bus-heading" title="Xe khách" bloom="tulip" animate={animate}>
       <div className="mt-4 text-base text-than">{children}</div>
     </SectionFrame>
   );

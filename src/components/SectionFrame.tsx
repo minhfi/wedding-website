@@ -29,10 +29,23 @@ type SectionFrameProps = {
   bloom: BloomVariant;
   children: ReactNode;
   className?: string;
+  /** Play the stem draw-on. Off for content that replaces an already-animated placeholder. */
+  animate?: boolean;
 };
 
 /** Page section on the leafy stem: a full-height stem segment, a few leaves, and a bloom on the heading. */
-export function SectionFrame({ id, headingId, title, bloom, children, className }: SectionFrameProps) {
+export function SectionFrame({
+  id,
+  headingId,
+  title,
+  bloom,
+  children,
+  className,
+  animate = true,
+}: SectionFrameProps) {
+  const grow = animate ? " motion-safe:animate-stem-grow" : "";
+  const fade = animate ? " motion-safe:animate-stem-fade" : "";
+
   return (
     <section
       id={id}
@@ -41,16 +54,16 @@ export function SectionFrame({ id, headingId, title, bloom, children, className 
     >
       <span
         aria-hidden="true"
-        className="absolute inset-y-0 left-gutter w-px origin-top bg-la-non motion-safe:animate-stem-grow"
+        className={`absolute inset-y-0 left-gutter w-px origin-top bg-la-non${grow}`}
       />
       {LEAVES[bloom].map((leaf) => (
-        <Leaf key={leaf.className} className={`pointer-events-none absolute motion-safe:animate-stem-fade ${leaf.className}`} />
+        <Leaf key={leaf.className} className={`pointer-events-none absolute${fade} ${leaf.className}`} />
       ))}
       <h2 id={headingId} className="relative font-serif text-heading font-light">
         <Bloom
           variant={bloom}
           size={30}
-          className="absolute top-1/2 -left-bud -translate-x-1/2 -translate-y-1/2 motion-safe:animate-stem-fade"
+          className={`absolute top-1/2 -left-bud -translate-x-1/2 -translate-y-1/2${fade}`}
         />
         {title}
       </h2>

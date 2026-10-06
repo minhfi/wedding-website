@@ -85,4 +85,14 @@ describe("SectionFrame", () => {
       expect(svg).toHaveClass("motion-safe:animate-stem-fade");
     }
   });
+
+  it("renders a static stem, leaves and bloom when animate is false", () => {
+    const { container } = render(
+      <SectionFrame headingId="h" title="Xe khách" bloom="tulip" animate={false}>
+        <p>nội dung</p>
+      </SectionFrame>,
+    );
+
+    expect(container.innerHTML).not.toMatch(/animate-stem/);
+  });
 });

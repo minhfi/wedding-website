@@ -26,9 +26,16 @@
   --spacing-stem: 2.75rem;
   /* Distance from the stem line to the content edge (stem - gutter); used to centre buds on the stem. */
   --spacing-bud: 1.25rem;
+  /* Placement of the line-art bouquet inside the cover arch. */
+  --spacing-bouquet-x: 8%;
+  --spacing-bouquet-bottom: 12%;
+  --spacing-bouquet-w: 84%;
   /* Desktop hero: caps the arched cover (4:5, inset by the gutter) at ~55dvh tall so cover, names,
      date and countdown fit one screen in the sticky left column. */
-  --container-hero-cover: calc(44dvh + 2 * var(--spacing-gutter));
+  --container-hero-cover: min(
+    calc(44dvh + 2 * var(--spacing-gutter)),
+    calc((100dvh - 24rem) * 0.8 + 2 * var(--spacing-gutter))
+  );
 
   /* Radius */
   --radius-control: 10px;
