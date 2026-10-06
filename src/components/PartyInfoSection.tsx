@@ -1,3 +1,4 @@
+import { SectionFrame } from "@/components/SectionFrame";
 import { siteConfig } from "@/config/site";
 
 const { venue, timeText } = siteConfig;
@@ -5,18 +6,7 @@ const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(venue.ad
 
 export function PartyInfoSection() {
   return (
-    <section aria-labelledby="party-heading" className="relative py-12 pr-gutter pl-stem">
-      <span aria-hidden="true" className="absolute inset-y-0 left-gutter w-px bg-la-non" />
-      <div className="relative">
-        <span
-          aria-hidden="true"
-          className="absolute top-1/2 -left-bud size-2.25 -translate-x-1/2 -translate-y-1/2 rounded-full bg-la-non"
-        />
-        <h2 id="party-heading" className="font-serif text-heading font-light">
-          Tiệc cưới
-        </h2>
-      </div>
-
+    <SectionFrame headingId="party-heading" title="Tiệc cưới" bloom="rose">
       <div className="mt-4 space-y-1 text-base">
         <p className="font-medium">Vào lúc {timeText}</p>
         <p className="font-medium">{venue.name}</p>
@@ -40,6 +30,6 @@ export function PartyInfoSection() {
         Mở bản đồ
         <span className="sr-only"> (mở trong ứng dụng bản đồ)</span>
       </a>
-    </section>
+    </SectionFrame>
   );
 }

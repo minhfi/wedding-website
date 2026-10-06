@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { SectionFrame } from "@/components/SectionFrame";
 import type { BusInfoResult, BusTrip } from "@/lib/types";
 
 const EMPTY_TEXT = "Thông tin xe sẽ được cập nhật sau";
@@ -6,22 +7,9 @@ const EMPTY_TEXT = "Thông tin xe sẽ được cập nhật sau";
 /** Section frame shared by the loaded section and its Suspense fallback, so layout stays stable. */
 export function BusSectionFrame({ children }: { children: ReactNode }) {
   return (
-    <section id="bus" aria-labelledby="bus-heading" className="relative py-12 pr-gutter pl-stem">
-      <span aria-hidden="true" className="absolute inset-y-0 left-gutter w-px bg-la-non" />
-      <div>
-        <h2
-          id="bus-heading"
-          className="relative font-serif text-heading font-light text-than"
-        >
-          <span
-            aria-hidden="true"
-            className="absolute top-1/2 -left-bud size-2.25 -translate-x-1/2 -translate-y-1/2 rounded-full bg-la-non"
-          />
-          Xe khách
-        </h2>
-        <div className="mt-4 text-base text-than">{children}</div>
-      </div>
-    </section>
+    <SectionFrame id="bus" headingId="bus-heading" title="Xe khách" bloom="tulip">
+      <div className="mt-4 text-base text-than">{children}</div>
+    </SectionFrame>
   );
 }
 

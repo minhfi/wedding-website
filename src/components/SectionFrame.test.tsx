@@ -1,0 +1,71 @@
+import { render, screen, within } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import type { BloomVariant } from "./botanical/Botanicals";
+import { SectionFrame } from "./SectionFrame";
+
+function renderFrame(props: { id?: string; bloom?: BloomVariant } = {}) {
+  return render(
+    <SectionFrame id={props.id} headingId="test-heading" title="Tiêu đề" bloom={props.bloom ?? "rose"}>
+      <p>Nội dung</p>
+    </SectionFrame>,
+  );
+}
+
+describe("SectionFrame", () => {
+  it("renders a region named by its heading", () => {
+    renderFrame();
+
+    const region = screen.getByRole("region", { name: "Tiêu đề" });
+    expect(region.tagName).toBe("SECTION");
+    expect(region).toHaveAttribute("aria-labelledby", "test-heading");
+    expect(screen.getByRole("heading", { level: 2, name: "Tiêu đề" })).toHaveAttribute(
+      "id",
+      "test-heading",
+    );
+  });
+
+  it("renders its children inside the region", () => {
+    renderFrame();
+
+    const region = screen.getByRole("region", { name: "Tiêu đề" });
+    expect(within(region).getByText("Nội dung")).toBeInTheDocument();
+  });
+
+  it("passes the id through to the section", () => {
+    renderFrame({ id: "bus" });
+
+    expect(screen.getByRole("region", { name: "Tiêu đề" })).toHaveAttribute("id", "bus");
+  });
+
+  it("omits the id when none is given", () => {
+    renderFrame();
+
+    expect(screen.getByRole("region", { name: "Tiêu đề" })).not.toHaveAttribute("id");
+  });
+
+  it.each<BloomVariant>(["rose", "tulip", "lace", "bud"])(
+    "draws the %s bloom on the heading, hidden from assistive tech",
+    (bloom) => {
+      renderFrame({ bloom });
+
+      const heading = screen.getByRole("heading", { level: 2, name: "Tiêu đề" });
+      const svg = heading.querySelector("svg");
+      expect(svg).not.toBeNull();
+      expect(svg).toHaveAttribute("aria-hidden", "true");
+      expect(heading).toHaveAccessibleName("Tiêu đề");
+    },
+  );
+
+  it("keeps the stem and its leaves decorative", () => {
+    const { container } = renderFrame();
+
+    const section = container.querySelector("section");
+    const decor = Array.from(section?.children ?? []).filter(
+      (el) => el.getAttribute("aria-hidden") === "true",
+    );
+    expect(decor.length).toBeGreaterThan(0);
+    for (const el of section?.querySelectorAll("svg") ?? []) {
+      expect(el).toHaveAttribute("aria-hidden", "true");
+    }
+  });
+});
