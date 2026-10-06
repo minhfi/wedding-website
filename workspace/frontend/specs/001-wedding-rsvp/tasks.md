@@ -145,8 +145,8 @@ UI task rules above apply (agent-browser at 360/768/1280 + web-design-guidelines
 **Reason**: owner feedback "thêm background cho đẹp… đơn điệu quá"; option A approved 2026-10-06
 (spec → Implementation notes → Background botanicals). UI task rules above apply.
 
-- [ ] T044 MP-1 TDD background decoration `src/components/BackgroundBotanicals.tsx` (+ test): fixed, full-viewport, `aria-hidden`, `pointer-events-none`, `-z-10` layer composed from `src/components/botanical/Botanicals.tsx` shapes (large branches/leaves/blooms) at ~10–20% opacity via token colors; corners only below 1024 px, side-margin sprigs at ≥1024 px; render it once in `src/app/page.tsx` (or layout) and add the desktop `lua` panel behind the sticky hero column; no hard-coded hex.
-- [ ] T045 MP-1 Verify T044 with agent-browser (via next-dev-loop) at 360/768/1024/1440 px: decoration visible but faint, never overlapping form controls on mobile, text contrast unchanged, no horizontal scroll; web-design-guidelines on changed files; full verify (lint, typecheck, test, build).
+- [x] T044 MP-1 TDD background decoration `src/components/BackgroundBotanicals.tsx` (+ test): fixed, full-viewport, `aria-hidden`, `pointer-events-none`, `-z-10` layer composed from `src/components/botanical/Botanicals.tsx` shapes (large branches/leaves/blooms) at ~10–20% opacity via token colors; corners only below 1280 px, side-margin sprigs at ≥1280 px (changed from 1024 after review); render it once in `src/app/page.tsx` (or layout) and add the desktop `lua` panel behind the sticky hero column; no hard-coded hex.
+- [x] T045 MP-1 Verify T044 with agent-browser (via next-dev-loop) at 360/768/1024/1440 px: decoration visible but faint, never overlapping form controls on mobile, text contrast unchanged, no horizontal scroll; web-design-guidelines on changed files; full verify (lint, typecheck, test, build).
 
 ## Dependencies & Execution Order
 
@@ -246,3 +246,12 @@ UI task rules above apply (agent-browser at 360/768/1280 + web-design-guidelines
   streaming (`animate={false}` on the streamed section), tokenised bouquet placement, removed dead class.
   Names overlapping the arch border replaced by names below the arch.
 - Verify: lint 0, typecheck 0, 377/377 tests, build OK (`/` partial prerender), `.next/static` clean.
+
+### Phase 8 verification (2026-10-06, agent-browser via next-dev-loop)
+
+- 360/1024/1280/1440 px: no horizontal scroll; corner branches below 1280 px (form area clear on
+  mobile), side-margin branches from 1280 px; desktop hero on `lua` panel with `canh-hoa` arch/pill.
+- web-design-guidelines review: no must-fix; margin sprigs moved from `lg` to `xl` (no side margins
+  at 1024–1279 px); class order nit fixed; size/iOS toolbar shift/mobile overlap recorded as
+  accepted deviations in spec.
+- Verify: lint 0, typecheck 0, 383/383 tests, build OK.

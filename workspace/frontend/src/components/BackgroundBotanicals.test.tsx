@@ -45,11 +45,11 @@ describe("BackgroundBotanicals", () => {
     const mobile = layer.querySelector('[data-placement="corners"]');
     const desktop = layer.querySelector('[data-placement="margins"]');
 
-    expect(mobile).toHaveClass("lg:hidden");
+    expect(mobile).toHaveClass("xl:hidden");
     expect(mobile).not.toHaveClass("hidden");
     expect(mobile?.querySelectorAll("svg").length).toBeGreaterThan(0);
 
-    expect(desktop).toHaveClass("hidden", "lg:block");
+    expect(desktop).toHaveClass("hidden", "xl:block");
     expect(desktop?.querySelectorAll("svg").length).toBeGreaterThan(0);
   });
 

@@ -180,11 +180,11 @@ const TOP_CLUSTER: BranchArt = {
 export function BackgroundBotanicals() {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden opacity-15">
-      <div data-placement="corners" className="lg:hidden">
+      <div data-placement="corners" className="xl:hidden">
         <Branch art={TOP_CORNER} className="absolute top-0 right-0 size-64" />
         <Branch art={BOTTOM_CORNER} className="absolute bottom-0 left-0 size-56" />
       </div>
-      <div data-placement="margins" className="hidden lg:block">
+      <div data-placement="margins" className="hidden xl:block">
         <Branch art={LEFT_EDGE} className="absolute bottom-0 left-0 h-full w-auto" />
         <Branch art={RIGHT_EDGE} className="absolute right-0 bottom-0 h-full w-auto" />
         <Branch art={TOP_CLUSTER} className="absolute top-0 right-0 size-60" />

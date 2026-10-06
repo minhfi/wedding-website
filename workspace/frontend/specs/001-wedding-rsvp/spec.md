@@ -344,8 +344,14 @@ margins (option A of A/B/C). Rules:
 - Decorative only: `aria-hidden`, `pointer-events: none`, behind content, no motion.
 - Very low contrast (la-non leaves and la-dam outlines at roughly 10–20% opacity) so body text keeps
   WCAG AA; never placed under the RSVP form controls on mobile (corners only on small screens).
-- Desktop (≥1024 px): bigger sprigs fill the wide side margins; the sticky hero column sits on a
-  soft `lua` panel (rounded, full column height) so the cover and names read as one card.
+- Wide desktop (≥1280 px): bigger sprigs fill the side margins. Below 1280 px only the corner
+  branches show (between 1024 and 1279 px there are no real side margins). From 1024 px the sticky
+  hero column sits on a soft `lua` panel (rounded, full column height); the arch and countdown pill
+  switch to `canh-hoa` there so they stand out on the panel.
+- Accepted deviations: on mobile a faint corner bloom can sit behind a few lines of text while
+  scrolling (worst case ≈ 4.8:1 for `da` text, still AA); the layer is ~60 KB of SVG markup
+  (both sets in the DOM, ~8–10 KB gzipped); on iOS the fixed layer follows the toolbar, so the
+  bottom-left sprig shifts slightly while scrolling.
 - Stays fixed to the viewport (does not scroll), so it frames every part of the page.
 
 ### Key files
