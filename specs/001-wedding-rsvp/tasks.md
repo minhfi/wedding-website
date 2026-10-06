@@ -125,6 +125,21 @@ changes in Sheet appear within 5 minutes.
 
 ---
 
+## Phase 7: Change — visual refinement "Cành hoa nở" + desktop layout (MP-1)
+
+**Reason**: owner feedback after first build ("giao diện xấu… thêm các trang trí cho đẹp, làm luôn
+cả desktop"); refinement approved 2026-10-06 (spec → Implementation notes → Visual refinement).
+UI task rules above apply (agent-browser at 360/768/1280 + web-design-guidelines).
+
+- [x] T036 MP-1 Record the approved refinement and FR-024 in `specs/001-wedding-rsvp/spec.md` (done with this phase's creation; tick on commit).
+- [ ] T037 MP-1 TDD botanical SVG kit in `src/components/botanical/Botanicals.tsx` with tests `src/components/botanical/Botanicals.test.tsx`: exported decorative components `Bloom` (`variant: "rose" | "tulip" | "lace" | "bud"`), `Leaf`, `LeafSprig`, `CornerSprig`, `Bouquet` (line-art bouquet for the cover), all `aria-hidden="true"`, `focusable="false"`, colors only via token CSS variables (`var(--color-la-dam)` etc. or `currentColor` + token classes), crisp at 1x/2x, small markup.
+- [ ] T038 MP-1 Arched cover + names sprig: update `src/components/CoverSection.tsx` (arch frame; render `Bouquet` on `lua` when `siteConfig.cover.src` is `null`, otherwise the photo inside the arch), `src/config/site.ts` (cover `src: string | null`, default `null` until the real photo), `src/components/CoupleDateSection.tsx` (LeafSprig beside "và", countdown slot), tests in `src/components/CoupleDateSection.test.tsx` and a new `src/components/CoverSection.test.tsx`; delete `public/cover.jpg` if unused.
+- [ ] T039 MP-1 Leafy stem + section blooms: extract a shared `src/components/SectionFrame.tsx` (stem segment with leaves + heading with `Bloom` variant + `aria-labelledby`), use it in `PartyInfoSection.tsx`, `BusInfoView.tsx` (`BusSectionFrame`), `GiftQrSection.tsx` and the RSVP section (move the RSVP section markup from `page.tsx` into `src/components/rsvp/RsvpSection.tsx`); tests in `src/components/SectionFrame.test.tsx`; existing section tests stay green.
+- [ ] T040 MP-1 Details: countdown pill in `src/components/Countdown.tsx`; line icons (clock, map pin) in `PartyInfoSection.tsx`; labelled bus rows with `nu` left rule in `BusInfoView.tsx`; `CornerSprig` on the QR card in `GiftQrSection.tsx`; update their tests.
+- [ ] T041 MP-1 Desktop two-column layout (FR-024) in `src/app/page.tsx` (+ `src/app/globals.css` tokens if needed): ≥1024 px sticky left hero column (cover, names, date, countdown), right column sections with stem; <1024 px unchanged single column.
+- [ ] T042 MP-1 Stem draw-on animation in `src/app/globals.css` (+ stem component): one ~1.2 s draw on load via `stroke-dashoffset`/`scaleY`, `prefers-reduced-motion: reduce` → no animation; no layout shift.
+- [ ] T043 MP-1 Verify the refinement with agent-browser (via next-dev-loop) at 360/768/1024/1280/1440 px against spec → Visual refinement; run web-design-guidelines on changed files; fix or record deviations; full verify (lint, typecheck, test, build).
+
 ## Dependencies & Execution Order
 
 - **Setup** T001 → T002 → T003.

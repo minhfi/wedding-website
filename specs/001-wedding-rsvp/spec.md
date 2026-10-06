@@ -218,7 +218,11 @@ log reflect the edit.
   visible focus indicator, and text MUST meet WCAG AA contrast.
 - **FR-023**: Visual style MUST follow the owner-approved direction: white/cream primary, fresh
   leaf-green accent, charcoal contrast; modern with generous whitespace, a thin serif for the
-  couple's names, and a clean sans-serif for body text.
+  couple's names, and a clean sans-serif for body text, decorated per the approved "Cành hoa nở"
+  refinement (botanical line art from the bouquet; see Implementation notes).
+- **FR-024**: On desktop widths (≥ 1024 px) the page MUST use a two-column layout: a sticky left
+  column with the cover, names, date and countdown, and a scrolling right column with the other
+  sections. Below 1024 px it stays a single column.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -307,6 +311,29 @@ is the single bold element; everything else stays quiet.
 
 Motion: none beyond responses to user actions; respect `prefers-reduced-motion`. Radius: 10px for
 controls, pills for the Tên/SĐT toggle.
+
+### Visual refinement "Cành hoa nở" (approved by owner 2026-10-06)
+
+The owner found the first build too plain. Refinement of the same direction (palette, fonts,
+left-aligned stem unchanged):
+
+1. **Arched cover**: the cover sits in an arch frame (rounded top, 10px bottom corners, `nu` 1px
+   border) inset by the gutter. Until the real photo exists, the arch shows a line-art bouquet drawn
+   from the owner's bouquet photo (white ranunculus/roses with `la-dam` outlines, `la-non` leaves,
+   small `nu` buds) on `lua`.
+2. **Leafy stem**: the stem is a slightly curved branch with small leaves. Each section heading has
+   its own bloom from the bouquet: rose (Tiệc cưới), tulip (Xe khách), Queen Anne's lace umbel
+   (Xác nhận tham dự), bud (Mừng cưới). Blooms are decorative (`aria-hidden`).
+3. **Leaf sprig** beside "và" between the names.
+4. **Countdown pill**: the sentence sits in a rounded `lua` pill with a `nu` border; numbers weight 500.
+5. **Line icons** (inline SVG, no icon dependency) for party time and place; bus info as two labelled
+   rows ("Chiều đi" / "Chiều về") with a `nu` left rule.
+6. **Corner sprig** crossing the bottom-right corner of the QR card.
+7. **One motion moment**: on load the stem draws downward from the cover once (~1.2 s); disabled with
+   `prefers-reduced-motion`.
+8. **Desktop (≥ 1024 px)**: two columns (FR-024). Left column (~45%) is sticky and holds the arched
+   cover, names, date and countdown; right column holds the stem and the remaining sections. Max
+   content width ~1120 px, centred.
 
 ### Key files
 
