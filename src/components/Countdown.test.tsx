@@ -84,6 +84,30 @@ describe("Countdown", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it("keeps placeholder, live and arrived text in the same pill", () => {
+    vi.setSystemTime(TARGET_MS - DAY);
+    const html = renderToString(<Countdown targetIso={TARGET_ISO} />);
+    expect(html).toMatch(/class="[^"]*rounded-full[^"]*"[^>]*><span>Đếm ngược/);
+
+    render(<Countdown targetIso={TARGET_ISO} />);
+    const pill = getCountdown();
+    expect(pill).toHaveClass("inline-flex", "rounded-full", "bg-lua", "border", "border-nu");
+
+    act(() => {
+      vi.setSystemTime(TARGET_MS + MINUTE);
+      vi.advanceTimersByTime(SECOND);
+    });
+    expect(getCountdown()).toBe(pill);
+    expect(pill).toHaveTextContent(ARRIVED);
+  });
+
+  it("renders numbers in weight 500 with tabular figures", () => {
+    vi.setSystemTime(TARGET_MS - (3 * DAY + 4 * HOUR + 5 * MINUTE));
+    render(<Countdown targetIso={TARGET_ISO} />);
+    const days = screen.getByText("3");
+    expect(days).toHaveClass("font-medium", "tabular-nums");
+  });
+
   it("defaults to siteConfig.eventAt", () => {
     const eventMs = Date.parse(siteConfig.eventAt);
     vi.setSystemTime(eventMs - (2 * DAY + 3 * HOUR + 4 * MINUTE));

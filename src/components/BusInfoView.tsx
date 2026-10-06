@@ -13,8 +13,22 @@ export function BusSectionFrame({ children }: { children: ReactNode }) {
   );
 }
 
-function tripText(label: string, trip: BusTrip | null, place: (diemDon: string) => string) {
-  return trip ? `${label}: ${place(trip.diemDon)} lúc ${trip.gio}` : `${label}: ${EMPTY_TEXT}`;
+/** One direction: a muted label line, then "<place> lúc <time>" with the time in weight 500. */
+function TripRow({ label, trip, placePrefix }: { label: string; trip: BusTrip | null; placePrefix: string }) {
+  return (
+    <li>
+      <p className="text-body text-da">{label}</p>
+      <p>
+        {trip ? (
+          <>
+            {placePrefix} {trip.diemDon} lúc <span className="font-medium">{trip.gio}</span>
+          </>
+        ) : (
+          EMPTY_TEXT
+        )}
+      </p>
+    </li>
+  );
 }
 
 export function BusInfoView({ result }: { result: BusInfoResult }) {
@@ -40,9 +54,9 @@ export function BusInfoView({ result }: { result: BusInfoResult }) {
       {di === null && ve === null ? (
         <p>{EMPTY_TEXT}</p>
       ) : (
-        <ul className="space-y-2">
-          <li>{tripText("Chiều đi", di, (diemDon) => `đón tại ${diemDon}`)}</li>
-          <li>{tripText("Chiều về", ve, (diemDon) => `khởi hành từ ${diemDon}`)}</li>
+        <ul className="space-y-3 border-l-2 border-nu pl-4">
+          <TripRow label="Chiều đi" trip={di} placePrefix="Đón tại" />
+          <TripRow label="Chiều về" trip={ve} placePrefix="Khởi hành từ" />
         </ul>
       )}
       <p className="mt-4 text-da">Đăng ký ghế xe trong phần Xác nhận tham dự bên dưới.</p>

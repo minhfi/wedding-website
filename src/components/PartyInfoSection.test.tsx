@@ -16,12 +16,38 @@ describe("PartyInfoSection", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows the time, venue name and address", () => {
+  it("shows the time with the date, venue name and address", () => {
     render(<PartyInfoSection />);
 
-    expect(screen.getByText(/14:00/)).toBeInTheDocument();
+    expect(screen.getByText("Vào lúc 14:00, Chủ nhật 17.01.2027")).toBeInTheDocument();
     expect(screen.getByText(siteConfig.venue.name)).toBeInTheDocument();
-    expect(screen.getByText(siteConfig.venue.address)).toBeInTheDocument();
+    expect(screen.getByText(siteConfig.venue.address)).toHaveClass("text-da");
+  });
+
+  it("puts a decorative line icon before the time and the place", () => {
+    render(<PartyInfoSection />);
+
+    const section = screen.getByRole("region", { name: "Tiệc cưới" });
+    // Botanical decorations use token strokes; the line icons inherit currentColor.
+    const icons = section.querySelectorAll('svg[stroke="currentColor"]');
+    expect(icons).toHaveLength(2);
+    icons.forEach((icon) => {
+      expect(icon).toHaveAttribute("aria-hidden", "true");
+      expect(icon).toHaveClass("text-la-dam");
+    });
+    const [timeIcon, placeIcon] = Array.from(icons);
+    expect(timeIcon.parentElement).toHaveTextContent("Vào lúc 14:00");
+    expect(placeIcon.parentElement).toHaveTextContent(siteConfig.venue.name);
+    expect(within(section).queryAllByRole("img")).toHaveLength(0);
+  });
+
+  it("gives the map a light border", () => {
+    render(<PartyInfoSection />);
+
+    expect(screen.getByTitle(`Bản đồ đến ${siteConfig.venue.name}`)).toHaveClass(
+      "border",
+      "border-nu",
+    );
   });
 
   it("embeds a lazy-loaded Google Maps iframe for the venue address", () => {
@@ -69,6 +95,17 @@ describe("GiftQrSection", () => {
     const images = within(section).getAllByRole("img");
     expect(images).toHaveLength(1);
     expect(images[0]).toHaveAccessibleName(siteConfig.qr.alt);
+  });
+
+  it("decorates the QR card with a corner sprig hidden from assistive tech", () => {
+    render(<GiftQrSection />);
+
+    const qrImage = screen.getByRole("img", { name: siteConfig.qr.alt });
+    const card = qrImage.parentElement;
+    expect(card).toHaveClass("relative");
+    const sprig = card?.querySelector(":scope > svg");
+    expect(sprig).toHaveAttribute("aria-hidden", "true");
+    expect(sprig).toHaveClass("pointer-events-none", "absolute");
   });
 
   it("shows the account holder and bank name", () => {

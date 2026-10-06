@@ -13,11 +13,11 @@ interface CountdownProps {
   targetIso?: string;
 }
 
-/** Renders the sentence with each number in weight 500, e.g. "Còn <3> ngày <4> giờ …". */
+/** Renders the sentence with each number in weight 500 and tabular figures, e.g. "Còn <3> ngày <4> giờ …". */
 function renderSentence(sentence: string) {
   return sentence.split(/(\d+)/).map((part, index) =>
     index % 2 === 1 ? (
-      <span key={index} className="font-medium">
+      <span key={index} className="font-medium tabular-nums">
         {part}
       </span>
     ) : (
@@ -44,8 +44,13 @@ export function Countdown({ targetIso = siteConfig.eventAt }: CountdownProps) {
   }
 
   return (
-    <p data-testid="countdown" aria-live="off" className="text-body text-than">
-      {content}
+    <p
+      data-testid="countdown"
+      aria-live="off"
+      className="inline-flex rounded-full border border-nu bg-lua px-4 py-2 text-body text-than"
+    >
+      {/* One inline wrapper, so the flex pill does not split text runs and drop their spaces. */}
+      <span>{content}</span>
     </p>
   );
 }

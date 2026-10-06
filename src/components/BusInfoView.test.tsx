@@ -6,6 +6,13 @@ import { BusInfoSkeleton, BusInfoView } from "./BusInfoView";
 const EMPTY = "Thông tin xe sẽ được cập nhật sau";
 const SEAT_NOTE = "Đăng ký ghế xe trong phần Xác nhận tham dự bên dưới.";
 
+/** The list row whose label line reads `label`. */
+function tripRow(label: string): HTMLElement {
+  const row = screen.getByText(label).closest("li");
+  if (!row) throw new Error(`No row labelled ${label}`);
+  return row;
+}
+
 function ok(info: Extract<BusInfoResult, { status: "ok" }>["info"]): BusInfoResult {
   return { status: "ok", info };
 }
@@ -21,10 +28,13 @@ describe("BusInfoView", () => {
       />,
     );
 
-    expect(screen.getByText("Chiều đi: đón tại Nhà trai, Quận 7 lúc 06:30")).toBeInTheDocument();
-    expect(
-      screen.getByText("Chiều về: khởi hành từ Nhà hàng Hoa Sen lúc 15:00"),
-    ).toBeInTheDocument();
+    const outbound = tripRow("Chiều đi");
+    expect(outbound).toHaveTextContent("Đón tại Nhà trai, Quận 7 lúc 06:30");
+    const returnTrip = tripRow("Chiều về");
+    expect(returnTrip).toHaveTextContent("Khởi hành từ Nhà hàng Hoa Sen lúc 15:00");
+    expect(screen.getByText("06:30")).toHaveClass("font-medium");
+    expect(screen.getByText("15:00")).toHaveClass("font-medium");
+    expect(screen.getByRole("list")).toHaveClass("border-l-2", "border-nu");
     expect(screen.getByText(SEAT_NOTE)).toBeInTheDocument();
     expect(screen.queryByText(new RegExp(EMPTY))).not.toBeInTheDocument();
   });
@@ -36,14 +46,18 @@ describe("BusInfoView", () => {
       />,
     );
 
-    expect(screen.getByText("Chiều đi: đón tại Nhà trai, Quận 7 lúc 06:30")).toBeInTheDocument();
-    expect(screen.getByText(`Chiều về: ${EMPTY}`)).toBeInTheDocument();
+    expect(tripRow("Chiều đi")).toHaveTextContent(
+      "Đón tại Nhà trai, Quận 7 lúc 06:30",
+    );
+    expect(tripRow("Chiều về")).toHaveTextContent(EMPTY);
+    expect(screen.getByText(SEAT_NOTE)).toBeInTheDocument();
   });
 
   it("shows a single empty state when neither direction is set", () => {
     render(<BusInfoView result={ok({ di: null, ve: null })} />);
 
     expect(screen.getByText(EMPTY)).toBeInTheDocument();
+    expect(screen.queryByRole("list")).not.toBeInTheDocument();
     expect(screen.queryByText(/Chiều đi/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Chiều về/)).not.toBeInTheDocument();
   });
