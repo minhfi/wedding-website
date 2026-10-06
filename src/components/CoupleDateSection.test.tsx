@@ -24,6 +24,29 @@ describe("CoupleDateSection", () => {
     expect(time).toHaveTextContent("Chủ nhật, 17.01.2027");
   });
 
+  it("renders a decorative leaf sprig beside \"và\"", () => {
+    render(<CoupleDateSection />);
+
+    const join = screen.getByText("và");
+    const sprig = join.parentElement?.querySelector("svg");
+    expect(sprig).toBeInTheDocument();
+    expect(sprig).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("renders the countdown slot content under the lunar line", () => {
+    render(
+      <CoupleDateSection>
+        <p>countdown slot</p>
+      </CoupleDateSection>,
+    );
+
+    const lunar = screen.getByText("Nhằm ngày 10 tháng Chạp năm Bính Ngọ");
+    const slot = screen.getByText("countdown slot");
+    expect(
+      lunar.compareDocumentPosition(slot) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("renders the lunar date line", () => {
     render(<CoupleDateSection />);
 

@@ -21,7 +21,8 @@ export interface SiteConfig {
     address: string;
     mapsUrl: string;
   };
-  cover: ImageAsset;
+  /** `src` is `null` until the real photo exists; the cover then shows the line-art bouquet. */
+  cover: Omit<ImageAsset, "src"> & { src: string | null };
   qr: ImageAsset & {
     accountHolder: string;
     bankName: string;
@@ -44,7 +45,7 @@ export const siteConfig: SiteConfig = {
     mapsUrl: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venueAddress)}`,
   },
   cover: {
-    src: "/cover.jpg",
+    src: null,
     alt: "Ảnh cưới của Minh Phi và Mỹ Ngân",
   },
   qr: {

@@ -29,8 +29,8 @@ describe("siteConfig", () => {
     );
   });
 
-  it("points to the cover and QR images in public/", () => {
-    expect(siteConfig.cover.src).toBe("/cover.jpg");
+  it("has no cover photo yet (the arch shows the bouquet) and points to the QR image", () => {
+    expect(siteConfig.cover.src).toBeNull();
     expect(siteConfig.cover.alt).not.toBe("");
     expect(siteConfig.qr.src).toBe("/qr.png");
   });
