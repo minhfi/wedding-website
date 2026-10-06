@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getGuest, submitRsvp } from "@/lib/api-client";
 import type { ApiResult } from "@/lib/api-client";
 import type { GuestDetail, GuestSuggestion } from "@/lib/types";
-import { RsvpForm } from "./RsvpForm";
+import { RsvpForm, formatConfirmedAt } from "./RsvpForm";
 
 vi.mock("@/lib/api-client", () => ({
   searchGuests: vi.fn(),
@@ -15,8 +15,18 @@ vi.mock("@/lib/api-client", () => ({
 const AN: GuestSuggestion = { id: "g1", ten: "Nguyễn Văn An" };
 
 vi.mock("./GuestLookup", () => ({
-  GuestLookup: ({ onSelect }: { onSelect: (guest: GuestSuggestion) => void }) => (
-    <button type="button" onClick={() => onSelect({ id: "g1", ten: "Nguyễn Văn An" })}>
+  GuestLookup: ({
+    onSelect,
+    focusOnMount,
+  }: {
+    onSelect: (guest: GuestSuggestion) => void;
+    focusOnMount?: boolean;
+  }) => (
+    <button
+      type="button"
+      data-focus-on-mount={String(Boolean(focusOnMount))}
+      onClick={() => onSelect({ id: "g1", ten: "Nguyễn Văn An" })}
+    >
       Chọn khách mẫu
     </button>
   ),
@@ -65,7 +75,7 @@ async function chooseBus(
   direction: "đi" | "về",
   choice: "Có" | "Không",
 ) {
-  const group = screen.getByRole("radiogroup", { name: new RegExp(`Đi xe khách chiều ${direction}`) });
+  const group = screen.getByRole("group", { name: new RegExp(`Đi xe khách chiều ${direction}`) });
   await user.click(within(group).getByRole("radio", { name: choice }));
 }
 
@@ -83,7 +93,7 @@ describe("RsvpForm", () => {
   it("starts with the guest lookup and no RSVP fields", () => {
     render(<RsvpForm />);
     expect(screen.getByRole("button", { name: "Chọn khách mẫu" })).toBeInTheDocument();
-    expect(screen.queryByRole("radiogroup", { name: "Bạn có đến dự tiệc không?" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Bạn có đến dự tiệc không?" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Gửi xác nhận" })).not.toBeInTheDocument();
   });
 
@@ -97,7 +107,7 @@ describe("RsvpForm", () => {
     );
     expect(screen.getByText("Nguyễn Văn An").tagName).toBe("STRONG");
     expect(screen.getByRole("button", { name: "Đổi người" })).toBeInTheDocument();
-    expect(screen.getByRole("radiogroup", { name: "Bạn có đến dự tiệc không?" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Bạn có đến dự tiệc không?" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Gửi xác nhận" })).toBeEnabled();
     expect(screen.queryByRole("button", { name: "Chọn khách mẫu" })).not.toBeInTheDocument();
   });
@@ -205,12 +215,14 @@ describe("RsvpForm", () => {
     await fillAttending(user);
     await user.click(screen.getByRole("button", { name: "Gửi xác nhận" }));
 
-    const status = await screen.findByRole("status");
-    expect(status).toHaveTextContent("Cảm ơn bạn đã xác nhận!");
-    expect(status).toHaveTextContent("Bạn sẽ đến cùng 3 người");
-    expect(status).toHaveTextContent("Xe chiều đi: 2 ghế");
-    expect(status).toHaveTextContent("Không đi xe chiều về");
-    expect(status).toHaveFocus();
+    const heading = await screen.findByRole("heading", { name: "Cảm ơn bạn đã xác nhận!" });
+    const summary = heading.parentElement;
+    expect(summary).toHaveTextContent("Số người đi tiệc: 3");
+    expect(summary).toHaveTextContent("Xe chiều đi: 2 ghế");
+    expect(summary).toHaveTextContent("Không đi xe chiều về");
+    expect(summary).toHaveAttribute("tabindex", "-1");
+    expect(summary).toHaveFocus();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Gửi xác nhận" })).not.toBeInTheDocument();
   });
 
@@ -223,12 +235,13 @@ describe("RsvpForm", () => {
     await user.click(screen.getByRole("button", { name: "Gửi xác nhận" }));
 
     expect(mockedSubmit).toHaveBeenCalledWith({ guestId: "g1", diTiec: "khong" });
-    const status = await screen.findByRole("status");
-    expect(status).toHaveTextContent("Cảm ơn bạn đã xác nhận!");
-    expect(status).toHaveTextContent(
+    const heading = await screen.findByRole("heading", { name: "Cảm ơn bạn đã xác nhận!" });
+    const summary = heading.parentElement;
+    expect(summary).toHaveTextContent(
       "Bạn đã báo không đến được. Cảm ơn bạn đã báo cho chúng mình.",
     );
-    expect(status).not.toHaveTextContent(/người|ghế/);
+    expect(summary).not.toHaveTextContent(/người|ghế/);
+    expect(summary).toHaveFocus();
   });
 
   it("'Sửa câu trả lời' returns to the filled form", async () => {
@@ -249,6 +262,71 @@ describe("RsvpForm", () => {
     expect(screen.getByLabelText("Số người đi tiệc")).toHaveValue(3);
     expect(screen.getByLabelText("Số ghế chiều đi")).toHaveValue(2);
     expect(screen.getByRole("button", { name: "Gửi xác nhận" })).toBeEnabled();
+    expect(screen.getByRole("radio", { name: "Có, mình sẽ đến" })).toHaveFocus();
+  });
+
+  it("focuses the chosen attendance answer after 'Sửa câu trả lời'", async () => {
+    mockedSubmit.mockResolvedValue({ ok: true, data: savedGuest({ diTiec: "khong" }) });
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await selectGuest(user);
+    await user.click(screen.getByRole("radio", { name: "Không đến được" }));
+    await user.click(screen.getByRole("button", { name: "Gửi xác nhận" }));
+
+    await user.click(await screen.findByRole("button", { name: "Sửa câu trả lời" }));
+
+    expect(screen.getByRole("radio", { name: "Không đến được" })).toHaveFocus();
+  });
+
+  it("focuses the guest header after picking a guest and keeps it once loaded", async () => {
+    const pending = deferred<ApiResult<GuestDetail>>();
+    mockedGetGuest.mockReturnValue(pending.promise);
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await clickSelect(user);
+
+    const header = screen.getByText(/Bạn đang xác nhận cho:/);
+    expect(header).toHaveAttribute("tabindex", "-1");
+    expect(header).toHaveFocus();
+
+    pending.resolve({ ok: true, data: NOT_ANSWERED });
+    await screen.findByRole("button", { name: "Gửi xác nhận" });
+    expect(screen.getByText(/Bạn đang xác nhận cho:/)).toHaveFocus();
+  });
+
+  it("asks the lookup to focus its input only after 'Đổi người'", async () => {
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    expect(screen.getByRole("button", { name: "Chọn khách mẫu" })).toHaveAttribute(
+      "data-focus-on-mount",
+      "false",
+    );
+    await selectGuest(user);
+    await user.click(screen.getByRole("button", { name: "Đổi người" }));
+    expect(screen.getByRole("button", { name: "Chọn khách mẫu" })).toHaveAttribute(
+      "data-focus-on-mount",
+      "true",
+    );
+  });
+
+  it("keeps the alert region mounted and only swaps its content on a submit error", async () => {
+    mockedSubmit.mockResolvedValue({
+      ok: false,
+      code: "network",
+      message: "Có lỗi kết nối, vui lòng thử lại",
+    });
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await selectGuest(user);
+    const alert = screen.getByRole("alert");
+    expect(alert).toBeEmptyDOMElement();
+
+    await user.click(screen.getByRole("radio", { name: "Không đến được" }));
+    await user.click(screen.getByRole("button", { name: "Gửi xác nhận" }));
+
+    expect(await screen.findByText("Có lỗi kết nối, vui lòng thử lại")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toBe(alert);
+    expect(alert).toHaveTextContent("Có lỗi kết nối, vui lòng thử lại");
   });
 
   it("shows the error message, keeps values, and 'Thử lại' resubmits", async () => {
@@ -264,7 +342,8 @@ describe("RsvpForm", () => {
     await fillAttending(user);
     await user.click(screen.getByRole("button", { name: "Gửi xác nhận" }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Có lỗi kết nối, vui lòng thử lại");
+    expect(await screen.findByText("Có lỗi kết nối, vui lòng thử lại")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("Có lỗi kết nối, vui lòng thử lại");
     expect(screen.getByRole("radio", { name: "Có, mình sẽ đến" })).toBeChecked();
     expect(screen.getByLabelText("Số người đi tiệc")).toHaveValue(3);
     expect(screen.getByLabelText("Số ghế chiều đi")).toHaveValue(2);
@@ -328,7 +407,7 @@ describe("RsvpForm pre-fill", () => {
     expect(mockedGetGuest).toHaveBeenCalledWith("g1");
     expect(screen.getByRole("status")).toHaveTextContent("Đang tải thông tin…");
     expect(screen.getByText(/Bạn đang xác nhận cho:/)).toHaveTextContent("Nguyễn Văn An");
-    expect(screen.queryByRole("radiogroup", { name: "Bạn có đến dự tiệc không?" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Bạn có đến dự tiệc không?" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Gửi xác nhận/ })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Đổi người" })).toBeEnabled();
 
@@ -357,14 +436,14 @@ describe("RsvpForm pre-fill", () => {
     await selectGuest(user);
 
     expect(
-      screen.getByText("Bạn đã xác nhận lúc 2026-11-02 20:15:03, có thể sửa lại bên dưới"),
+      screen.getByText("Bạn đã xác nhận lúc 20:15 ngày 02/11/2026, có thể sửa lại bên dưới"),
     ).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: "Có, mình sẽ đến" })).toBeChecked();
     expect(screen.getByLabelText("Số người đi tiệc")).toHaveValue(3);
-    const xeDi = screen.getByRole("radiogroup", { name: /Đi xe khách chiều đi/ });
+    const xeDi = screen.getByRole("group", { name: /Đi xe khách chiều đi/ });
     expect(within(xeDi).getByRole("radio", { name: "Có" })).toBeChecked();
     expect(screen.getByLabelText("Số ghế chiều đi")).toHaveValue(2);
-    const xeVe = screen.getByRole("radiogroup", { name: /Đi xe khách chiều về/ });
+    const xeVe = screen.getByRole("group", { name: /Đi xe khách chiều về/ });
     expect(within(xeVe).getByRole("radio", { name: "Không" })).toBeChecked();
     expect(screen.queryByLabelText("Số ghế chiều về")).not.toBeInTheDocument();
   });
@@ -407,22 +486,33 @@ describe("RsvpForm pre-fill", () => {
   });
 
   it("shows a load error with 'Thử lại' that calls getGuest again", async () => {
+    const first = deferred<ApiResult<GuestDetail>>();
     mockedGetGuest
-      .mockResolvedValueOnce({ ok: false, code: "network", message: "Có lỗi kết nối, vui lòng thử lại" })
+      .mockReturnValueOnce(first.promise)
       .mockResolvedValueOnce({ ok: true, data: savedGuest({ diTiec: "khong" }) });
     const user = userEvent.setup();
     render(<RsvpForm />);
     await clickSelect(user);
+    const alert = screen.getByRole("alert");
+    const status = screen.getByRole("status");
+    expect(status).toHaveTextContent("Đang tải thông tin…");
+    expect(alert).toBeEmptyDOMElement();
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("Có lỗi kết nối, vui lòng thử lại");
-    expect(screen.queryByRole("radiogroup", { name: "Bạn có đến dự tiệc không?" })).not.toBeInTheDocument();
+    first.resolve({ ok: false, code: "network", message: "Có lỗi kết nối, vui lòng thử lại" });
+
+    expect(await screen.findByText("Có lỗi kết nối, vui lòng thử lại")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toBe(alert);
+    expect(alert).toHaveTextContent("Có lỗi kết nối, vui lòng thử lại");
+    expect(screen.getByRole("status")).toBe(status);
+    expect(status).toBeEmptyDOMElement();
+    expect(screen.queryByRole("group", { name: "Bạn có đến dự tiệc không?" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Đổi người" })).toBeEnabled();
 
     await user.click(screen.getByRole("button", { name: "Thử lại" }));
 
     expect(mockedGetGuest).toHaveBeenCalledTimes(2);
     expect(await screen.findByRole("radio", { name: "Không đến được" })).toBeChecked();
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("alert")).toBeEmptyDOMElement();
   });
 
   it("'Đổi người' works while loading and after a load error", async () => {
@@ -440,7 +530,7 @@ describe("RsvpForm pre-fill", () => {
     expect(screen.getByRole("button", { name: "Chọn khách mẫu" })).toBeInTheDocument();
 
     await clickSelect(user);
-    await screen.findByRole("alert");
+    await screen.findByText("Có lỗi kết nối, vui lòng thử lại");
     await user.click(screen.getByRole("button", { name: "Đổi người" }));
     expect(screen.getByRole("button", { name: "Chọn khách mẫu" })).toBeInTheDocument();
   });
@@ -476,7 +566,7 @@ describe("RsvpForm pre-fill", () => {
     const user = userEvent.setup();
     render(<RsvpForm />);
     await selectGuest(user);
-    expect(screen.getByText(/2026-11-01 08:00:00/)).toBeInTheDocument();
+    expect(screen.getByText(/08:00 ngày 01\/11\/2026/)).toBeInTheDocument();
 
     await user.click(screen.getByRole("radio", { name: "Có, mình sẽ đến" }));
     await user.type(screen.getByLabelText("Số người đi tiệc"), "4");
@@ -488,13 +578,36 @@ describe("RsvpForm pre-fill", () => {
     await user.click(await screen.findByRole("button", { name: "Sửa câu trả lời" }));
 
     expect(
-      screen.getByText("Bạn đã xác nhận lúc 2026-11-02 20:15:03, có thể sửa lại bên dưới"),
+      screen.getByText("Bạn đã xác nhận lúc 20:15 ngày 02/11/2026, có thể sửa lại bên dưới"),
     ).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: "Có, mình sẽ đến" })).toBeChecked();
     expect(screen.getByLabelText("Số người đi tiệc")).toHaveValue(4);
-    const xeDi = screen.getByRole("radiogroup", { name: /Đi xe khách chiều đi/ });
+    const xeDi = screen.getByRole("group", { name: /Đi xe khách chiều đi/ });
     expect(within(xeDi).getByRole("radio", { name: "Không" })).toBeChecked();
     expect(screen.getByLabelText("Số ghế chiều về")).toHaveValue(3);
     expect(mockedGetGuest).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("formatConfirmedAt", () => {
+  it("formats the Sheet timestamp as 'HH:mm ngày dd/MM/yyyy'", () => {
+    expect(formatConfirmedAt("2026-11-02 20:15:03")).toBe("20:15 ngày 02/11/2026");
+    expect(formatConfirmedAt(" 2027-01-05 08:04:59 ")).toBe("08:04 ngày 05/01/2027");
+  });
+
+  it("returns the value unchanged when it does not match the pattern", () => {
+    expect(formatConfirmedAt("2026-11-02T20:15:03Z")).toBe("2026-11-02T20:15:03Z");
+    expect(formatConfirmedAt("hôm qua")).toBe("hôm qua");
+    expect(formatConfirmedAt("")).toBe("");
+  });
+
+  it("shows an unrecognised confirmation time raw in the note", async () => {
+    mockedGetGuest.mockResolvedValue({ ok: true, data: savedGuest({ diTiec: "khong" }, "02/11/2026") });
+    const user = userEvent.setup();
+    render(<RsvpForm />);
+    await selectGuest(user);
+    expect(
+      screen.getByText("Bạn đã xác nhận lúc 02/11/2026, có thể sửa lại bên dưới"),
+    ).toBeInTheDocument();
   });
 });

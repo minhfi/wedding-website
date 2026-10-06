@@ -8,6 +8,8 @@ import type { GuestSuggestion } from "@/lib/types";
 
 interface GuestLookupProps {
   onSelect: (guest: GuestSuggestion) => void;
+  /** Focuses the search input once mounted (e.g. after "Đổi người"). */
+  focusOnMount?: boolean;
 }
 
 type LookupStatus =
@@ -27,8 +29,8 @@ const MODES: readonly { value: SearchBy; label: string }[] = [
 ];
 
 const INPUT_COPY: Record<SearchBy, { label: string; placeholder: string }> = {
-  ten: { label: "Tìm tên của bạn", placeholder: "Nguyễn Văn An" },
-  sdt: { label: "Nhập số điện thoại", placeholder: "0901 234 567" },
+  ten: { label: "Tìm tên của bạn", placeholder: "Nguyễn Văn A…" },
+  sdt: { label: "Nhập số điện thoại", placeholder: "09xx xxx xxx" },
 };
 
 const IDLE: LookupStatus = { kind: "idle" };
@@ -39,7 +41,10 @@ function isSearchable(mode: SearchBy, query: string): boolean {
     : query.replace(/\D/g, "").length >= MIN_PHONE_DIGITS;
 }
 
-export function GuestLookup({ onSelect }: GuestLookupProps) {
+const RETRY_BUTTON_CLASS =
+  "min-h-11 self-start touch-manipulation rounded-control border border-la-dam px-4 py-2 text-body font-medium text-la-dam hover:bg-lua motion-safe:transition-colors";
+
+export function GuestLookup({ onSelect, focusOnMount = false }: GuestLookupProps) {
   const baseId = useId();
   const inputId = `${baseId}-input`;
   const listboxId = `${baseId}-listbox`;
@@ -55,6 +60,10 @@ export function GuestLookup({ onSelect }: GuestLookupProps) {
 
   const query = value.trim();
   const searchable = isSearchable(mode, query);
+
+  useEffect(() => {
+    if (focusOnMount) inputRef.current?.focus();
+  }, [focusOnMount]);
 
   useEffect(() => {
     if (!searchable) return;
@@ -93,10 +102,18 @@ export function GuestLookup({ onSelect }: GuestLookupProps) {
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>) {
     const next = event.target.value;
+    const nextQuery = next.trim();
     setValue(next);
-    setActiveIndex(-1);
     setOpen(true);
-    setStatus(isSearchable(mode, next.trim()) ? { kind: "searching" } : IDLE);
+    // Whitespace-only edits keep the query, so the search effect does not re-run.
+    if (nextQuery === query) return;
+    setActiveIndex(-1);
+    setStatus(isSearchable(mode, nextQuery) ? { kind: "searching" } : IDLE);
+  }
+
+  function close() {
+    setOpen(false);
+    setActiveIndex(-1);
   }
 
   function select(guest: GuestSuggestion) {
@@ -126,8 +143,7 @@ export function GuestLookup({ onSelect }: GuestLookupProps) {
       case "Escape":
         if (expanded) {
           event.preventDefault();
-          setOpen(false);
-          setActiveIndex(-1);
+          close();
         }
         break;
     }
@@ -136,6 +152,8 @@ export function GuestLookup({ onSelect }: GuestLookupProps) {
   function retry() {
     setStatus({ kind: "searching" });
     setAttempt((count) => count + 1);
+    // The retry button unmounts once results arrive; keep focus on the search input.
+    inputRef.current?.focus();
   }
 
   return (
@@ -144,7 +162,7 @@ export function GuestLookup({ onSelect }: GuestLookupProps) {
         {MODES.map((option) => (
           <label
             key={option.value}
-            className="cursor-pointer rounded-full border border-da px-4 py-1.5 text-sm font-medium text-than has-checked:border-la-dam has-checked:bg-la-dam has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-la-dam"
+            className="inline-flex min-h-11 cursor-pointer touch-manipulation items-center rounded-full border border-da px-5 py-2 text-body font-medium text-than hover:border-la-dam hover:bg-lua motion-safe:transition-colors has-checked:border-la-dam has-checked:bg-la-dam has-checked:text-white has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-la-dam"
           >
             <input
               type="radio"
@@ -167,18 +185,22 @@ export function GuestLookup({ onSelect }: GuestLookupProps) {
           <input
             ref={inputRef}
             id={inputId}
+            name="guest-search"
             type={mode === "sdt" ? "tel" : "text"}
             inputMode={mode === "sdt" ? "tel" : "text"}
             autoComplete="off"
+            spellCheck={false}
             role="combobox"
             aria-autocomplete="list"
             aria-expanded={expanded}
-            aria-controls={listboxId}
+            aria-controls={expanded ? listboxId : undefined}
             aria-activedescendant={activeId}
             placeholder={copy.placeholder}
             value={value}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            onFocus={() => setOpen(true)}
+            onBlur={close}
             className="w-full rounded-control border border-da bg-lua px-4 py-3 text-base text-than placeholder:text-da"
           />
           {expanded && (
@@ -196,7 +218,7 @@ export function GuestLookup({ onSelect }: GuestLookupProps) {
                   aria-selected={index === activeIndex}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => select(guest)}
-                  className="cursor-pointer px-4 py-3 text-than hover:bg-lua aria-selected:bg-lua aria-selected:text-la-dam"
+                  className="cursor-pointer touch-manipulation px-4 py-3 text-than hover:bg-lua aria-selected:bg-lua aria-selected:text-la-dam"
                 >
                   {guest.ten}
                 </li>
@@ -206,7 +228,10 @@ export function GuestLookup({ onSelect }: GuestLookupProps) {
         </div>
       </div>
 
-      <div role="status" aria-live="polite" className="text-sm text-da">
+      <div role="status" aria-live="polite" className="text-body text-da">
+        {searchable && status.kind === "results" && (
+          <span className="sr-only">{`${items.length} gợi ý, dùng phím mũi tên để chọn`}</span>
+        )}
         {searchable && status.kind === "searching" && (
           <span className="inline-flex items-center gap-2">
             <span
@@ -225,11 +250,7 @@ export function GuestLookup({ onSelect }: GuestLookupProps) {
         {searchable && status.kind === "error" && <p className="text-than">{status.message}</p>}
       </div>
       {searchable && status.kind === "error" && (
-        <button
-          type="button"
-          onClick={retry}
-          className="self-start rounded-control border border-la-dam px-4 py-2 text-sm font-medium text-la-dam"
-        >
+        <button type="button" onClick={retry} className={RETRY_BUTTON_CLASS}>
           Thử lại
         </button>
       )}

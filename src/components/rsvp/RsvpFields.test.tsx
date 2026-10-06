@@ -47,7 +47,7 @@ function Harness({
 describe("RsvpFields", () => {
   it("asks whether the guest attends, with two labelled choices", () => {
     render(<Harness />);
-    const group = screen.getByRole("radiogroup", { name: "Bạn có đến dự tiệc không?" });
+    const group = screen.getByRole("group", { name: "Bạn có đến dự tiệc không?" });
     expect(group).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: "Có, mình sẽ đến" })).not.toBeChecked();
     expect(screen.getByRole("radio", { name: "Không đến được" })).not.toBeChecked();
@@ -57,7 +57,7 @@ describe("RsvpFields", () => {
     const user = userEvent.setup();
     render(<Harness />);
     expect(screen.queryByLabelText("Số người đi tiệc")).not.toBeInTheDocument();
-    expect(screen.queryByRole("radiogroup", { name: /Đi xe khách chiều đi/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: /Đi xe khách chiều đi/ })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("radio", { name: "Có, mình sẽ đến" }));
 
@@ -67,8 +67,8 @@ describe("RsvpFields", () => {
     expect(people).toHaveAttribute("min", "1");
     expect(people).toHaveAttribute("max", "10");
     expect(people).toHaveAttribute("step", "1");
-    expect(screen.getByRole("radiogroup", { name: /Đi xe khách chiều đi/ })).toBeInTheDocument();
-    expect(screen.getByRole("radiogroup", { name: /Đi xe khách chiều về/ })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Đi xe khách chiều đi/ })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: /Đi xe khách chiều về/ })).toBeInTheDocument();
     expect(screen.queryByLabelText("Số ghế chiều đi")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Số ghế chiều về")).not.toBeInTheDocument();
   });
@@ -85,7 +85,7 @@ describe("RsvpFields", () => {
   it("shows a direction's seat field only when that direction is 'Có'", async () => {
     const user = userEvent.setup();
     render(<Harness initial={{ ...EMPTY_RSVP_VALUES, diTiec: "co" }} />);
-    const outbound = screen.getByRole("radiogroup", { name: /Đi xe khách chiều đi/ });
+    const outbound = screen.getByRole("group", { name: /Đi xe khách chiều đi/ });
     await user.click(screen.getAllByRole("radio", { name: "Có" })[0]);
     expect(outbound).toBeInTheDocument();
     const seats = screen.getByLabelText("Số ghế chiều đi");
@@ -99,7 +99,7 @@ describe("RsvpFields", () => {
 
   it("explains that pickup details are shown elsewhere", () => {
     render(<Harness initial={{ ...EMPTY_RSVP_VALUES, diTiec: "co" }} />);
-    const outbound = screen.getByRole("radiogroup", { name: /Đi xe khách chiều đi/ });
+    const outbound = screen.getByRole("group", { name: /Đi xe khách chiều đi/ });
     expect(outbound).toHaveAccessibleDescription(/điểm đón/i);
   });
 
@@ -163,27 +163,26 @@ describe("RsvpFields", () => {
     expect(seats).toHaveAttribute("aria-invalid", "true");
     expect(seats).toHaveAccessibleDescription(errors.gheXeDi);
 
-    const returnGroup = screen.getByRole("radiogroup", { name: /Đi xe khách chiều về/ });
-    expect(returnGroup).toHaveAttribute("aria-invalid", "true");
+    const returnGroup = screen.getByRole("group", { name: /Đi xe khách chiều về/ });
+    expect(returnGroup).not.toHaveAttribute("role");
     expect(returnGroup).toHaveAccessibleDescription(errors.xeVe);
     for (const radio of [
       screen.getAllByRole("radio", { name: "Có" })[1],
       screen.getAllByRole("radio", { name: "Không" })[1],
     ]) {
-      expect(radio).toHaveAccessibleDescription(errors.xeVe);
+      expect(radio).not.toHaveAttribute("aria-describedby");
     }
 
-    const outboundGroup = screen.getByRole("radiogroup", { name: /Đi xe khách chiều đi/ });
-    expect(outboundGroup).not.toHaveAttribute("aria-invalid");
+    const outboundGroup = screen.getByRole("group", { name: /Đi xe khách chiều đi/ });
+    expect(outboundGroup).toHaveAccessibleDescription(/điểm đón/i);
+    expect(outboundGroup).not.toHaveAccessibleDescription(/Vui lòng/);
   });
 
   it("shows the attendance error on the attendance choices", () => {
     render(<Harness errors={{ diTiec: "Vui lòng chọn có đi tiệc hay không" }} />);
-    const group = screen.getByRole("radiogroup", { name: "Bạn có đến dự tiệc không?" });
-    expect(group).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getByRole("radio", { name: "Có, mình sẽ đến" })).toHaveAccessibleDescription(
-      "Vui lòng chọn có đi tiệc hay không",
-    );
+    const group = screen.getByRole("group", { name: "Bạn có đến dự tiệc không?" });
+    expect(group).toHaveAccessibleDescription("Vui lòng chọn có đi tiệc hay không");
+    expect(document.querySelectorAll("[aria-describedby~='diTiec-error']")).toHaveLength(1);
   });
 
   it("marks fields valid when there are no errors", () => {

@@ -39,7 +39,11 @@ describe("PartyInfoSection", () => {
   it("links to the venue on Google Maps in a new tab", () => {
     render(<PartyInfoSection />);
 
-    const link = screen.getByRole("link", { name: "Mở bản đồ" });
+    // jsdom trims the sr-only span's leading space; browsers keep it.
+    const link = screen.getByRole("link", {
+      name: /^Mở bản đồ ?\(mở trong ứng dụng bản đồ\)$/,
+    });
+    expect(link).toHaveTextContent(/^Mở bản đồ/);
     expect(link).toHaveAttribute("href", siteConfig.venue.mapsUrl);
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");

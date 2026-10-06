@@ -20,10 +20,10 @@ function ok(data: GuestSuggestion[]): Promise<ApiResult<GuestSuggestion[]>> {
   return Promise.resolve({ ok: true, data });
 }
 
-function setup() {
+function setup(props: { focusOnMount?: boolean } = {}) {
   const onSelect = vi.fn();
   const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-  render(<GuestLookup onSelect={onSelect} />);
+  render(<GuestLookup onSelect={onSelect} {...props} />);
   return { user, onSelect };
 }
 
@@ -49,8 +49,77 @@ describe("GuestLookup", () => {
     expect(within(group).getByRole("radio", { name: "Tên" })).toBeChecked();
     expect(within(group).getByRole("radio", { name: "SĐT" })).not.toBeChecked();
     const input = screen.getByRole("combobox", { name: "Tìm tên của bạn" });
-    expect(input).toHaveAttribute("placeholder", "Nguyễn Văn An");
+    expect(input).toHaveAttribute("placeholder", "Nguyễn Văn A…");
     expect(input).toHaveAttribute("aria-expanded", "false");
+    expect(input).toHaveAttribute("name", "guest-search");
+    expect(input).toHaveAttribute("autocomplete", "off");
+    expect(input).toHaveAttribute("spellcheck", "false");
+  });
+
+  it("does not move focus on mount by default", () => {
+    setup();
+    expect(screen.getByRole("combobox")).not.toHaveFocus();
+  });
+
+  it("focuses the input on mount when focusOnMount is set", () => {
+    setup({ focusOnMount: true });
+    expect(screen.getByRole("combobox")).toHaveFocus();
+  });
+
+  it("only references the listbox with aria-controls while it is rendered", async () => {
+    mockedSearch.mockReturnValue(ok([AN]));
+    const { user } = setup();
+    const input = screen.getByRole("combobox");
+    expect(input).not.toHaveAttribute("aria-controls");
+    await user.type(input, "Ng");
+    await flushDebounce();
+    const listbox = await screen.findByRole("listbox");
+    expect(input).toHaveAttribute("aria-controls", listbox.id);
+    await user.keyboard("{Escape}");
+    expect(input).not.toHaveAttribute("aria-controls");
+  });
+
+  it("keeps the results and shows no spinner when only whitespace is added", async () => {
+    mockedSearch.mockReturnValue(ok([AN]));
+    const { user } = setup();
+    const input = screen.getByRole("combobox");
+    await user.type(input, "nguyen");
+    await flushDebounce();
+    await screen.findByRole("option", { name: AN.ten });
+
+    await user.type(input, " ");
+    await flushDebounce();
+
+    expect(screen.getByRole("option", { name: AN.ten })).toBeInTheDocument();
+    expect(screen.queryByText("Đang tìm…")).not.toBeInTheDocument();
+    expect(mockedSearch).toHaveBeenCalledTimes(1);
+  });
+
+  it("announces the number of suggestions in the status region", async () => {
+    mockedSearch.mockReturnValue(ok([AN, BINH]));
+    const { user } = setup();
+    await user.type(screen.getByRole("combobox"), "Ng");
+    await flushDebounce();
+    await screen.findByRole("listbox");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "2 gợi ý, dùng phím mũi tên để chọn",
+    );
+  });
+
+  it("closes the list when the input loses focus and reopens it on focus", async () => {
+    mockedSearch.mockReturnValue(ok([AN]));
+    const { user } = setup();
+    const input = screen.getByRole("combobox");
+    await user.type(input, "Ng");
+    await flushDebounce();
+    await screen.findByRole("listbox");
+
+    await user.tab();
+    expect(input).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+
+    await user.click(input);
+    expect(input).toHaveAttribute("aria-expanded", "true");
   });
 
   it("switches to phone mode with a tel input", async () => {
@@ -58,7 +127,7 @@ describe("GuestLookup", () => {
     await user.click(screen.getByRole("radio", { name: "SĐT" }));
     const input = screen.getByRole("combobox", { name: "Nhập số điện thoại" });
     expect(input).toHaveAttribute("inputMode", "tel");
-    expect(input).toHaveAttribute("placeholder", "0901 234 567");
+    expect(input).toHaveAttribute("placeholder", "09xx xxx xxx");
   });
 
   it("debounces 300 ms and searches by name with the trimmed query", async () => {
@@ -236,6 +305,7 @@ describe("GuestLookup", () => {
     expect(mockedSearch).toHaveBeenLastCalledWith("ten", "An", expect.any(AbortSignal));
     expect(await screen.findByRole("option", { name: AN.ten })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Thử lại" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toHaveFocus();
   });
 
   it("ignores aborted results", async () => {

@@ -70,7 +70,7 @@ const errorId = (field: RsvpField) => `${field}-error`;
 function FieldError({ field, message }: { field: RsvpField; message?: string }) {
   if (!message) return null;
   return (
-    <p id={errorId(field)} className="mt-2 flex items-start gap-1.5 text-sm font-medium text-than">
+    <p id={errorId(field)} className="mt-2 flex items-start gap-1.5 text-body font-medium text-than">
       <svg
         aria-hidden="true"
         viewBox="0 0 20 20"
@@ -115,19 +115,15 @@ function ChoiceGroup<T extends string | boolean>({
   disabled,
 }: ChoiceGroupProps<T>) {
   const hintId = `${name}-hint`;
+  // The error is linked once, on the fieldset (jsx-a11y rejects aria-invalid on radios).
   const describedBy = [hint ? hintId : null, error ? errorId(name) : null]
     .filter((id) => id !== null)
     .join(" ");
   return (
-    <fieldset
-      role="radiogroup"
-      aria-invalid={error ? true : undefined}
-      aria-describedby={describedBy || undefined}
-      className="min-w-0"
-    >
+    <fieldset aria-describedby={describedBy || undefined} className="min-w-0">
       <legend className="text-base font-medium text-than">{legend}</legend>
       {hint ? (
-        <p id={hintId} className="mt-1 text-sm text-da">
+        <p id={hintId} className="mt-1 text-body text-da">
           {hint}
         </p>
       ) : null}
@@ -135,7 +131,7 @@ function ChoiceGroup<T extends string | boolean>({
         {options.map((option) => (
           <label
             key={String(option.value)}
-            className="flex min-h-11 cursor-pointer items-center justify-center rounded-control border border-da bg-canh-hoa px-3 py-2 text-center text-base font-medium text-than has-checked:border-la-dam has-checked:bg-nu has-checked:text-la-dam has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-la-dam has-disabled:cursor-not-allowed has-disabled:opacity-60"
+            className="flex min-h-11 cursor-pointer touch-manipulation items-center justify-center rounded-control border border-da bg-canh-hoa px-3 py-2 text-center text-base font-medium text-than not-has-disabled:hover:border-la-dam not-has-disabled:hover:bg-lua motion-safe:transition-colors has-checked:border-la-dam has-checked:bg-nu has-checked:text-la-dam has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-la-dam has-disabled:cursor-not-allowed has-disabled:opacity-60"
           >
             <input
               type="radio"
@@ -144,7 +140,6 @@ function ChoiceGroup<T extends string | boolean>({
               checked={value === option.value}
               onChange={() => onSelect(option.value)}
               disabled={disabled}
-              aria-describedby={error ? errorId(name) : undefined}
               className="sr-only"
             />
             {option.label}
@@ -184,7 +179,7 @@ function CountInput({ name, label, value, onValueChange, error, disabled }: Coun
         disabled={disabled}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId(name) : undefined}
-        className="mt-2 min-h-11 w-28 rounded-control border border-da bg-lua px-3 py-2 text-base text-than aria-invalid:border-2 aria-invalid:border-than disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-2 min-h-11 w-28 touch-manipulation rounded-control border border-da bg-lua px-3 py-2 text-base text-than aria-invalid:border-2 aria-invalid:border-than disabled:cursor-not-allowed disabled:opacity-60"
       />
       <FieldError field={name} message={error} />
     </div>

@@ -5,12 +5,12 @@ const { qr } = siteConfig;
 
 export function GiftQrSection() {
   return (
-    <section aria-labelledby="gift-heading" className="relative py-8 pl-stem">
-      <span aria-hidden="true" className="absolute inset-y-0 left-0 w-px bg-la-non" />
+    <section aria-labelledby="gift-heading" className="relative py-12 pr-gutter pl-stem">
+      <span aria-hidden="true" className="absolute inset-y-0 left-gutter w-px bg-la-non" />
       <div className="relative">
         <span
           aria-hidden="true"
-          className="absolute top-1/2 -left-stem size-2.25 -translate-x-1/2 -translate-y-1/2 rounded-full bg-la-non"
+          className="absolute top-1/2 -left-bud size-2.25 -translate-x-1/2 -translate-y-1/2 rounded-full bg-la-non"
         />
         <h2 id="gift-heading" className="font-serif text-heading font-light">
           Mừng cưới

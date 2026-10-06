@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { getGuest, submitRsvp } from "@/lib/api-client";
 import { validateRsvp, type RsvpErrors, type RsvpField } from "@/lib/rsvp-validation";
@@ -131,11 +131,24 @@ function firstInvalidField(errors: RsvpErrors): RsvpField | undefined {
   return FIELD_ORDER.find((field) => errors[field] !== undefined);
 }
 
+const SHEET_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):\d{2}$/;
+
+/** "yyyy-MM-dd HH:mm:ss" → "HH:mm ngày dd/MM/yyyy"; any other value is returned unchanged. */
+export function formatConfirmedAt(capNhatLuc: string): string {
+  const match = SHEET_TIMESTAMP.exec(capNhatLuc.trim());
+  if (!match) return capNhatLuc;
+  const [, year, month, day, hour, minute] = match;
+  return `${hour}:${minute} ngày ${day}/${month}/${year}`;
+}
+
 function previousAnswerNote({ capNhatLuc }: PreviousAnswer): string {
   return capNhatLuc
-    ? `Bạn đã xác nhận lúc ${capNhatLuc}, có thể sửa lại bên dưới`
+    ? `Bạn đã xác nhận lúc ${formatConfirmedAt(capNhatLuc)}, có thể sửa lại bên dưới`
     : "Bạn đã xác nhận trước đó, có thể sửa lại bên dưới";
 }
+
+const OUTLINE_BUTTON_CLASS =
+  "min-h-11 self-start touch-manipulation rounded-control border border-la-dam px-4 py-2 text-body font-medium text-la-dam hover:bg-lua motion-safe:transition-colors";
 
 function SuccessSummary({ rsvp }: { rsvp: Rsvp }) {
   if (rsvp.diTiec === "khong") {
@@ -143,7 +156,7 @@ function SuccessSummary({ rsvp }: { rsvp: Rsvp }) {
   }
   return (
     <ul className="space-y-1">
-      <li>Bạn sẽ đến cùng {rsvp.soNguoi} người</li>
+      <li>Số người đi tiệc: {rsvp.soNguoi}</li>
       <li>{rsvp.gheXeDi > 0 ? `Xe chiều đi: ${rsvp.gheXeDi} ghế` : "Không đi xe chiều đi"}</li>
       <li>{rsvp.gheXeVe > 0 ? `Xe chiều về: ${rsvp.gheXeVe} ghế` : "Không đi xe chiều về"}</li>
     </ul>
@@ -156,11 +169,15 @@ export function RsvpForm() {
 
   const formRef = useRef<HTMLFormElement>(null);
   const successRef = useRef<HTMLDivElement>(null);
+  const guestHeaderRef = useRef<HTMLParagraphElement>(null);
+  /** False on first render so the page does not jump to the lookup; true after "Đổi người". */
+  const [focusLookup, setFocusLookup] = useState(false);
   const submittingRef = useRef(false);
   /** Bumped on every guest load or guest change; a response for an older id is ignored. */
   const loadIdRef = useRef(0);
 
-  const pendingFocusRef = useRef<RsvpField | null>(null);
+  /** What to focus after the next commit: a form field, or the guest header. */
+  const pendingFocusRef = useRef<RsvpField | "guestHeader" | null>(null);
 
   const isSuccess = status.kind === "success";
   useEffect(() => {
@@ -169,10 +186,19 @@ export function RsvpForm() {
 
   // Runs after every commit so it focuses a control only once it is rendered and enabled.
   useEffect(() => {
-    const field = pendingFocusRef.current;
-    if (!field) return;
+    const target = pendingFocusRef.current;
+    if (!target) return;
     pendingFocusRef.current = null;
-    formRef.current?.querySelector<HTMLElement>(`[name="${field}"]`)?.focus();
+    if (target === "guestHeader") {
+      guestHeaderRef.current?.focus();
+      return;
+    }
+    const form = formRef.current;
+    // In a radio group, prefer the checked option (the one Tab would land on).
+    const control =
+      form?.querySelector<HTMLElement>(`[name="${target}"]:checked`) ??
+      form?.querySelector<HTMLElement>(`[name="${target}"]`);
+    control?.focus();
   });
 
   async function loadGuest(selected: GuestSuggestion) {
@@ -187,6 +213,7 @@ export function RsvpForm() {
   }
 
   function selectGuest(selected: GuestSuggestion) {
+    pendingFocusRef.current = "guestHeader";
     dispatch({ type: "select", guest: selected });
     void loadGuest(selected);
   }
@@ -199,7 +226,13 @@ export function RsvpForm() {
 
   function changeGuest() {
     loadIdRef.current += 1;
+    setFocusLookup(true);
     dispatch({ type: "changeGuest" });
+  }
+
+  function editAnswer() {
+    pendingFocusRef.current = "diTiec";
+    dispatch({ type: "edit" });
   }
 
   async function submit() {
@@ -240,24 +273,20 @@ export function RsvpForm() {
   }
 
   if (!guest) {
-    return <GuestLookup onSelect={selectGuest} />;
+    return <GuestLookup onSelect={selectGuest} focusOnMount={focusLookup} />;
   }
 
   if (status.kind === "success") {
+    // Focus moves here on success, so no live region is needed (avoids a double announcement).
     return (
       <div
         ref={successRef}
-        role="status"
         tabIndex={-1}
-        className="flex flex-col gap-4 rounded-control bg-lua p-6 text-than"
+        className="flex flex-col gap-4 rounded-control bg-lua p-6 text-than outline-none"
       >
-        <p className="font-serif text-heading text-la-dam">Cảm ơn bạn đã xác nhận!</p>
+        <h3 className="font-serif text-heading text-la-dam">Cảm ơn bạn đã xác nhận!</h3>
         <SuccessSummary rsvp={status.rsvp} />
-        <button
-          type="button"
-          onClick={() => dispatch({ type: "edit" })}
-          className="self-start rounded-control border border-la-dam px-4 py-2 text-sm font-medium text-la-dam"
-        >
+        <button type="button" onClick={editAnswer} className={OUTLINE_BUTTON_CLASS}>
           Sửa câu trả lời
         </button>
       </div>
@@ -265,95 +294,98 @@ export function RsvpForm() {
   }
 
   const submitting = status.kind === "submitting";
-
-  const guestHeader = (
-    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-than">
-      <p>
-        Bạn đang xác nhận cho: <strong>{guest.ten}</strong>
-      </p>
-      <button
-        type="button"
-        onClick={changeGuest}
-        disabled={submitting}
-        className="text-sm font-medium text-la-dam underline underline-offset-4 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        Đổi người
-      </button>
-    </div>
-  );
-
-  if (status.kind === "loading" || status.kind === "loadError") {
-    return (
-      <div className="flex flex-col gap-4">
-        {guestHeader}
-        {status.kind === "loading" ? (
-          <p role="status" className="inline-flex items-center gap-2 text-sm text-da">
-            <span
-              aria-hidden="true"
-              className="size-4 rounded-full border-2 border-nu border-t-la-dam motion-safe:animate-spin"
-            />
-            Đang tải thông tin…
-          </p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            <p role="alert" className="text-sm font-medium text-than">
-              {status.message}
-            </p>
-            <button
-              type="button"
-              onClick={retryLoad}
-              className="self-start rounded-control border border-la-dam px-4 py-2 text-sm font-medium text-la-dam"
-            >
-              Thử lại
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
+  const loadPhase = status.kind === "loading" || status.kind === "loadError";
 
   return (
-    <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col gap-6">
-      {guestHeader}
-
-      {previous ? (
-        <p className="rounded-control bg-lua px-4 py-3 text-sm text-than">
-          {previousAnswerNote(previous)}
+    <div className="flex flex-col gap-6">
+      {/* Stays mounted from loading to the form, so focus placed here is kept. It is a
+          non-interactive focus target (for screen readers), so it shows no focus ring. */}
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-than">
+        <p ref={guestHeaderRef} tabIndex={-1} className="outline-none">
+          Bạn đang xác nhận cho: <strong>{guest.ten}</strong>
         </p>
-      ) : null}
+        <button
+          type="button"
+          onClick={changeGuest}
+          disabled={submitting}
+          className="inline-flex min-h-11 touch-manipulation items-center text-body font-medium text-la-dam underline underline-offset-4 enabled:hover:text-than motion-safe:transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Đổi người
+        </button>
+      </div>
 
-      <RsvpFields
-        values={values}
-        onChange={(next) => dispatch({ type: "change", values: next })}
-        errors={errors}
-        disabled={submitting}
-      />
-
-      {status.kind === "error" ? (
-        <div className="flex flex-col gap-3">
-          <p role="alert" className="text-sm font-medium text-than">
-            {status.message}
-          </p>
-          {status.canRetry ? (
-            <button
-              type="button"
-              onClick={() => void submit()}
-              className="self-start rounded-control border border-la-dam px-4 py-2 text-sm font-medium text-la-dam"
-            >
+      {loadPhase ? (
+        <div className="flex flex-col">
+          {/* Live regions stay mounted; only their content changes. */}
+          <div role="status" aria-live="polite">
+            {status.kind === "loading" ? (
+              <p className="inline-flex items-center gap-2 text-body text-da">
+                <span
+                  aria-hidden="true"
+                  className="size-4 rounded-full border-2 border-nu border-t-la-dam motion-safe:animate-spin"
+                />
+                Đang tải thông tin…
+              </p>
+            ) : null}
+          </div>
+          <div role="alert">
+            {status.kind === "loadError" ? (
+              <p className="text-body font-medium text-than">{status.message}</p>
+            ) : null}
+          </div>
+          {status.kind === "loadError" ? (
+            <button type="button" onClick={retryLoad} className={`mt-3 ${OUTLINE_BUTTON_CLASS}`}>
               Thử lại
             </button>
           ) : null}
         </div>
-      ) : null}
+      ) : (
+        <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col gap-6">
+          {previous ? (
+            <p className="rounded-control bg-lua px-4 py-3 text-body text-than">
+              {previousAnswerNote(previous)}
+            </p>
+          ) : null}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        aria-busy={submitting || undefined}
-        className="min-h-11 w-full rounded-control bg-la-dam px-4 py-3 text-base font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {submitting ? "Đang gửi…" : "Gửi xác nhận"}
-      </button>
-    </form>
+          <RsvpFields
+            values={values}
+            onChange={(next) => dispatch({ type: "change", values: next })}
+            errors={errors}
+            disabled={submitting}
+          />
+
+          <div className="flex flex-col">
+            {/* Stays mounted; only its content changes. */}
+            <div role="alert">
+              {status.kind === "error" ? (
+                <p
+                  className={`text-body font-medium text-than ${status.canRetry ? "mb-3" : "mb-6"}`}
+                >
+                  {status.message}
+                </p>
+              ) : null}
+            </div>
+            {status.kind === "error" && status.canRetry ? (
+              <button
+                type="button"
+                onClick={() => void submit()}
+                className={`mb-6 ${OUTLINE_BUTTON_CLASS}`}
+              >
+                Thử lại
+              </button>
+            ) : null}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              aria-busy={submitting || undefined}
+              className="min-h-11 w-full touch-manipulation rounded-control bg-la-dam px-4 py-3 text-base font-medium text-white enabled:hover:bg-than motion-safe:transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {submitting ? "Đang gửi…" : "Gửi xác nhận"}
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
   );
 }
