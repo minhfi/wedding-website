@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cacheLife } from "next/cache";
-import { callAppsScript } from "./apps-script";
+import { AppsScriptError, callAppsScript } from "./apps-script";
 import { matchesName, matchesPhone, normalizeName, normalizePhone } from "../normalize";
 import { MAX_COUNT, MIN_COUNT } from "../rsvp-validation";
 import type { GuestDetail, GuestId, GuestIndexEntry, GuestSuggestion, Rsvp } from "../types";
@@ -122,11 +122,23 @@ function isQueryLongEnough(by: GuestSearchBy, q: string): boolean {
 }
 
 /** Up to 8 `{ id, ten }` suggestions sorted by name; [] below the minimum query length. */
+/** Errors thrown inside a 'use cache' function lose their class, so restore the AppsScriptError contract. */
+async function loadGuestIndex(): Promise<GuestIndexEntry[]> {
+  try {
+    return await getGuestIndex();
+  } catch (error) {
+    if (error instanceof AppsScriptError) {
+      throw error;
+    }
+    throw new AppsScriptError("upstream", { cause: error });
+  }
+}
+
 export async function searchGuests(by: GuestSearchBy, q: string): Promise<GuestSuggestion[]> {
   if (!isQueryLongEnough(by, q)) {
     return [];
   }
-  const index = await getGuestIndex();
+  const index = await loadGuestIndex();
   const matches = index.filter((entry) =>
     by === "ten" ? matchesName(entry.tenNorm, q) : matchesPhone(entry.sdtNorm, q),
   );

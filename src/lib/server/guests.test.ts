@@ -102,6 +102,16 @@ describe("searchGuests", () => {
     respondWith({ listGuests: GUEST_LIST });
   });
 
+  it("rethrows a non-AppsScriptError from the cached index as AppsScriptError upstream", async () => {
+    // Errors crossing a 'use cache' boundary lose their class, so the route can't match them.
+    callAppsScriptMock.mockRejectedValue(new Error("Apps Script request failed: upstream"));
+    await expect(searchGuests("ten", "an")).rejects.toMatchObject({
+      name: "AppsScriptError",
+      code: "upstream",
+    });
+    await expect(searchGuests("ten", "an")).rejects.toBeInstanceOf(AppsScriptError);
+  });
+
   it("returns [] for a name query shorter than 2 characters", async () => {
     expect(await searchGuests("ten", "n")).toEqual([]);
     expect(await searchGuests("ten", "  ")).toEqual([]);
