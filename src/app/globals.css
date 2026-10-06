@@ -1,26 +1,117 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Approved visual direction "Cành hoa" — see specs/001-wedding-rsvp/spec.md → Implementation notes. */
+@theme {
+  /* Colors */
+  --color-canh-hoa: #fbfaf5;
+  --color-lua: #f0f3e8;
+  --color-nu: #dde9c6;
+  --color-la-non: #86ad55;
+  --color-la-dam: #3e5c2b;
+  --color-da: #5b635c;
+  --color-than: #2b302c;
+
+  /* Type scale */
+  --text-names: 3.75rem;
+  --text-names--line-height: 1.05;
+  --text-names-join: 2.25rem;
+  --text-names-join--line-height: 1.1;
+  --text-heading: 1.625rem;
+  --text-heading--line-height: 1.25;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.6;
+
+  /* Layout */
+  --spacing-gutter: 1.5rem;
+  --spacing-stem: 2.75rem;
+  /* Distance from the stem line to the content edge (stem - gutter); used to centre buds on the stem. */
+  --spacing-bud: 1.25rem;
+  /* Placement of the line-art bouquet inside the cover arch. */
+  --spacing-bouquet-x: 8%;
+  --spacing-bouquet-bottom: 12%;
+  --spacing-bouquet-w: 84%;
+  /* Desktop hero: caps the arched cover (4:5, inset by the gutter) at ~55dvh tall so cover, names,
+     date and countdown fit one screen in the sticky left column. */
+  --container-hero-cover: min(
+    calc(44dvh + 2 * var(--spacing-gutter)),
+    calc((100dvh - 24rem) * 0.8 + 2 * var(--spacing-gutter))
+  );
+
+  /* Radius */
+  --radius-control: 10px;
 }
 
+/* Font families point at the CSS variables exposed by next/font on <html>. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-noto-serif-display), ui-serif, Georgia, serif;
+  --font-sans: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Stem draw-on (one motion moment): each stem segment grows down from its top, staggered by
+   --stem-delay so the segments read as one growth from the cover (~1.2 s in total). Leaves and
+   blooms fade in once their segment has started. Transform/opacity only, so no layout shift.
+   Applied with `motion-safe:` so `prefers-reduced-motion: reduce` shows the stem fully, unanimated.
+   `inline` keeps var(--stem-delay) unresolved until it reaches the element that animates. */
+@theme inline {
+  --animate-stem-grow: stem-grow 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--stem-delay, 0s) both;
+  --animate-stem-fade: stem-fade 0.5s ease-out calc(var(--stem-delay, 0s) + 0.3s) both;
+}
+
+@keyframes stem-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes stem-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer components {
+  /* Stagger for the sections below the names (the names' own segment starts at 0 s). `of section`
+     skips the <template> React streams in before a Suspense fallback. */
+  .stem-sequence > :nth-child(1 of section) {
+    --stem-delay: 0.15s;
+  }
+  .stem-sequence > :nth-child(2 of section) {
+    --stem-delay: 0.3s;
+  }
+  .stem-sequence > :nth-child(3 of section) {
+    --stem-delay: 0.45s;
+  }
+  .stem-sequence > :nth-child(4 of section) {
+    --stem-delay: 0.6s;
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--color-canh-hoa);
+    color: var(--color-than);
+    font-family: var(--font-sans);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-la-dam);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
