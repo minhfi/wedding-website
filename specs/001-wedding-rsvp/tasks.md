@@ -108,7 +108,7 @@ changes in Sheet appear within 5 minutes.
 
 **Independent Test**: quickstart V7, V8.
 
-- [ ] T029 [US3] MP-1 TDD `GET /api/guests/[id]` in `src/app/api/guests/[id]/route.ts` with tests `src/app/api/guests/[id]/route.test.ts` (node env; mock `@/lib/server/apps-script`; read the Next 16 route params docs — `params` is a Promise): 200 `GuestDetail` via `mapSheetGuest` (no `sdt` key), 404 `not_found`, 502 `upstream`.
+- [x] T029 [US3] MP-1 TDD `GET /api/guests/[id]` in `src/app/api/guests/[id]/route.ts` with tests `src/app/api/guests/[id]/route.test.ts` (node env; mock `@/lib/server/apps-script`; read the Next 16 route params docs — `params` is a Promise): 200 `GuestDetail` via `mapSheetGuest` (no `sdt` key), 404 `not_found`, 502 `upstream`.
 - [ ] T030 [US3] MP-1 TDD pre-fill in `src/components/rsvp/RsvpForm.tsx` (tests in `src/components/rsvp/RsvpForm.test.tsx`): after a guest is selected, call `getGuest(id)` with loading state "Đang tải thông tin…" and error + retry; when `rsvp` exists, pre-fill fields and show "Bạn đã xác nhận lúc <capNhatLuc>, có thể sửa lại bên dưới"; success screen offers "Sửa câu trả lời" returning to the pre-filled form. Verify with `agent-browser` quickstart V7, V8; review with `web-design-guidelines`.
 - [ ] T031 [manual] [US3] MP-1 Confirm edit writes (V8). **Steps**: change K001 to Không and submit. **Expected**: Khach K001 = `Không` with empty counts and new time; a second LichSu row for K001. Owner confirms.
 
