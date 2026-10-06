@@ -86,7 +86,7 @@ function getBusInfo() {
     const key = str(row[t.col.khoa]);
     if (!BUS_KEYS.includes(key)) return;
     const value = row[t.col.gia_tri];
-    info[key] = value instanceof Date ? Utilities.formatDate(value, tz, 'HH:mm') : str(value);
+    info[key] = isDate(value) ? Utilities.formatDate(value, tz, 'HH:mm') : str(value);
   });
   return info;
 }
@@ -226,8 +226,13 @@ function num(value) {
   return s !== '' && isFinite(Number(s)) ? Number(s) : s;
 }
 
+/** Dates from the Sheets service can fail `instanceof Date` (different realm), so duck-type them. */
+function isDate(value) {
+  return Object.prototype.toString.call(value) === '[object Date]' && !isNaN(value.getTime());
+}
+
 function dateTime(value) {
-  return value instanceof Date ? Utilities.formatDate(value, TZ, DATETIME_FORMAT) : str(value);
+  return isDate(value) ? Utilities.formatDate(value, TZ, DATETIME_FORMAT) : str(value);
 }
 
 /** Phone as string; restores a leading 0 the Sheet dropped from a 9-digit number. */
