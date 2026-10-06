@@ -33,7 +33,7 @@ with `web-design-guidelines`; fix findings or record accepted deviations in spec
 
 **Purpose**: Tooling and configuration required before any feature code.
 
-- [ ] T001 MP-1 Add test tooling: `pnpm add -D vitest @vitejs/plugin-react jsdom @testing-library/react @testing-library/dom @testing-library/user-event @testing-library/jest-dom vite-tsconfig-paths`; create `vitest.config.mts` (plugins react + tsconfigPaths, `environment: 'jsdom'`, `setupFiles: ['./vitest.setup.ts']`, alias `server-only` → `./src/test/server-only-stub.ts`), `vitest.setup.ts` (imports `@testing-library/jest-dom/vitest`), `src/test/server-only-stub.ts` (empty export); add scripts to `package.json`: `"typecheck": "tsc --noEmit"`, `"test": "vitest run --passWithNoTests"`, `"test:watch": "vitest"`. Done when `pnpm test` and `pnpm typecheck` exit 0.
+- [x] T001 MP-1 Add test tooling: `pnpm add -D vitest @vitejs/plugin-react jsdom @testing-library/react @testing-library/dom @testing-library/user-event @testing-library/jest-dom vite-tsconfig-paths`; create `vitest.config.mts` (plugins react + tsconfigPaths, `environment: 'jsdom'`, `setupFiles: ['./vitest.setup.ts']`, alias `server-only` → `./src/test/server-only-stub.ts`), `vitest.setup.ts` (imports `@testing-library/jest-dom/vitest`), `src/test/server-only-stub.ts` (empty export); add scripts to `package.json`: `"typecheck": "tsc --noEmit"`, `"test": "vitest run --passWithNoTests"`, `"test:watch": "vitest"`. Done when `pnpm test` and `pnpm typecheck` exit 0.
 - [ ] T002 MP-1 Enable Cache Components and env template: set `cacheComponents: true` in `next.config.ts` (per `node_modules/next/dist/docs/01-app/01-getting-started/08-caching.md`); create `.env.example` with `APPS_SCRIPT_URL=` and `APPS_SCRIPT_SECRET=` (comment: server-only, never `NEXT_PUBLIC_`); confirm `.gitignore` ignores `.env*` except `.env.example` (add `!.env.example` if needed). Done when `pnpm build` passes.
 - [ ] T003 MP-1 Run verify once (`pnpm lint && pnpm typecheck && pnpm test && pnpm build`) and record results as the baseline in `## Build log` of `specs/001-wedding-rsvp/tasks.md`.
 
@@ -148,3 +148,18 @@ changes in Sheet appear within 5 minutes.
    `src/config/site.ts`, `public/`, and the CauHinh tab whenever the owner supplies it.
 
 ## Build log
+
+### Baseline (2026-10-06, branch `001-wedding-rsvp` @ 7182a60)
+
+- `pnpm lint`: pass (0 problems)
+- `pnpm exec tsc --noEmit`: pass (`typecheck` script not yet added — T001)
+- `pnpm test`: n/a (no test runner yet — T001)
+- `pnpm build`: pass (`/` and `/_not-found` static)
+- Pre-existing failures: none
+
+### Process notes
+
+- Superpowers plugin is not installed in this environment. Execution follows the same loop manually:
+  one fresh implementer subagent per task (TDD), then a reviewer subagent (spec compliance + code
+  quality), tick + commit per task.
+- `agent-browser` CLI is not installed → UI verification steps are blocked until the owner installs it.
