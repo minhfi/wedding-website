@@ -26,6 +26,9 @@
   --spacing-stem: 2.75rem;
   /* Distance from the stem line to the content edge (stem - gutter); used to centre buds on the stem. */
   --spacing-bud: 1.25rem;
+  /* Desktop hero: caps the arched cover (4:5, inset by the gutter) at ~55dvh tall so cover, names,
+     date and countdown fit one screen in the sticky left column. */
+  --container-hero-cover: calc(44dvh + 2 * var(--spacing-gutter));
 
   /* Radius */
   --radius-control: 10px;
@@ -35,6 +38,51 @@
 @theme inline {
   --font-serif: var(--font-noto-serif-display), ui-serif, Georgia, serif;
   --font-sans: var(--font-be-vietnam-pro), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Stem draw-on (one motion moment): each stem segment grows down from its top, staggered by
+   --stem-delay so the segments read as one growth from the cover (~1.2 s in total). Leaves and
+   blooms fade in once their segment has started. Transform/opacity only, so no layout shift.
+   Applied with `motion-safe:` so `prefers-reduced-motion: reduce` shows the stem fully, unanimated.
+   `inline` keeps var(--stem-delay) unresolved until it reaches the element that animates. */
+@theme inline {
+  --animate-stem-grow: stem-grow 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) var(--stem-delay, 0s) both;
+  --animate-stem-fade: stem-fade 0.5s ease-out calc(var(--stem-delay, 0s) + 0.3s) both;
+}
+
+@keyframes stem-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes stem-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@layer components {
+  /* Stagger for the sections below the names (the names' own segment starts at 0 s). `of section`
+     skips the <template> React streams in before a Suspense fallback. */
+  .stem-sequence > :nth-child(1 of section) {
+    --stem-delay: 0.15s;
+  }
+  .stem-sequence > :nth-child(2 of section) {
+    --stem-delay: 0.3s;
+  }
+  .stem-sequence > :nth-child(3 of section) {
+    --stem-delay: 0.45s;
+  }
+  .stem-sequence > :nth-child(4 of section) {
+    --stem-delay: 0.6s;
+  }
 }
 
 @layer base {

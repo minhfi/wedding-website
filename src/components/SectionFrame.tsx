@@ -39,15 +39,18 @@ export function SectionFrame({ id, headingId, title, bloom, children, className 
       aria-labelledby={headingId}
       className={`relative py-12 pr-gutter pl-stem${className ? ` ${className}` : ""}`}
     >
-      <span aria-hidden="true" className="absolute inset-y-0 left-gutter w-px bg-la-non" />
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-gutter w-px origin-top bg-la-non motion-safe:animate-stem-grow"
+      />
       {LEAVES[bloom].map((leaf) => (
-        <Leaf key={leaf.className} className={`pointer-events-none absolute ${leaf.className}`} />
+        <Leaf key={leaf.className} className={`pointer-events-none absolute motion-safe:animate-stem-fade ${leaf.className}`} />
       ))}
       <h2 id={headingId} className="relative font-serif text-heading font-light">
         <Bloom
           variant={bloom}
           size={30}
-          className="absolute top-1/2 -left-bud -translate-x-1/2 -translate-y-1/2"
+          className="absolute top-1/2 -left-bud -translate-x-1/2 -translate-y-1/2 motion-safe:animate-stem-fade"
         />
         {title}
       </h2>

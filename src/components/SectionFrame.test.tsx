@@ -68,4 +68,21 @@ describe("SectionFrame", () => {
       expect(el).toHaveAttribute("aria-hidden", "true");
     }
   });
+
+  it("grows its stem segment from the top only when motion is allowed", () => {
+    const { container } = renderFrame();
+
+    const stem = container.querySelector("section > span[aria-hidden='true']");
+    expect(stem).toHaveClass("origin-top", "motion-safe:animate-stem-grow");
+  });
+
+  it("fades its leaves and bloom in only when motion is allowed", () => {
+    const { container } = renderFrame();
+
+    const svgs = container.querySelectorAll("section svg");
+    expect(svgs.length).toBeGreaterThan(0);
+    for (const svg of svgs) {
+      expect(svg).toHaveClass("motion-safe:animate-stem-fade");
+    }
+  });
 });

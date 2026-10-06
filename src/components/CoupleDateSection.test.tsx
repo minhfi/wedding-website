@@ -54,4 +54,11 @@ describe("CoupleDateSection", () => {
       screen.getByText("Nhằm ngày 10 tháng Chạp năm Bính Ngọ"),
     ).toBeInTheDocument();
   });
+
+  it("grows its decorative stem segment from the top only when motion is allowed", () => {
+    const { container } = render(<CoupleDateSection />);
+
+    const stem = container.querySelector("section > [aria-hidden='true']");
+    expect(stem).toHaveClass("origin-top", "motion-safe:animate-stem-grow");
+  });
 });

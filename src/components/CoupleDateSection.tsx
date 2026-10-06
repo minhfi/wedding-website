@@ -14,7 +14,7 @@ export function CoupleDateSection({ children }: CoupleDateSectionProps) {
     <section className="relative z-10 -mt-12 pr-gutter pl-stem">
       <div
         aria-hidden="true"
-        className="absolute top-0 bottom-0 left-gutter w-px bg-la-non"
+        className="absolute top-0 bottom-0 left-gutter w-px origin-top bg-la-non motion-safe:animate-stem-grow"
       />
       <h1 className="font-serif text-names font-extralight text-than">
         <span className="block">{groom.shortName}</span>{" "}
