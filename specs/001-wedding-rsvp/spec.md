@@ -36,11 +36,11 @@ values and a change-log row was added.
 
 **Acceptance Scenarios**:
 
-1. **Given** the guest list contains "Nguyễn Văn An", **When** a guest selects "Tìm theo tên" and
+1. **Given** the guest list contains "Nguyễn Văn An", **When** a guest selects "Tên" in the "Tìm theo" toggle and
    types "nguyen van", **Then** "Nguyễn Văn An" appears among the suggestions and no phone
    numbers are shown or delivered to the guest's device.
 2. **Given** the guest list contains a guest with phone 0901234567, **When** a guest selects
-   "Tìm theo SĐT" and types "0901234", **Then** that guest's name appears in the suggestions
+   "SĐT" and types "0901234", **Then** that guest's name appears in the suggestions
    (name only).
 3. **Given** a guest is selected, **When** they choose "Có đi tiệc? → Không" and submit, **Then**
    the RSVP is saved as not attending with no people or seat counts, and a success message is
@@ -78,8 +78,9 @@ with the configured content and that the countdown ticks.
 2. **Given** the page loads, **Then** the date reads "Chủ nhật, 17.01.2027" prominently with
    the line "Nhằm ngày 10 tháng Chạp năm Bính Ngọ" beneath it, and the party time reads 14:00.
 3. **Given** the current time is before 14:00 17/01/2027 Vietnam time (UTC+7), **Then** the
-   countdown shows days, hours, minutes, and seconds remaining and updates every second,
-   correctly regardless of the visitor's device time zone.
+   countdown shows the remaining time as a sentence ("Còn N ngày N giờ N phút nữa", per the
+   approved visual direction; no seconds), recalculated every second, correctly regardless of the
+   visitor's device time zone.
 4. **Given** the countdown target has passed, **Then** the countdown is replaced by a message
    that the wedding day has arrived/passed instead of showing negative numbers.
 5. **Given** the party information section, **Then** it shows venue name, address, an embedded
@@ -155,7 +156,9 @@ log reflect the edit.
   wedding date; countdown; party information; bus information; RSVP form; wedding gift QR.
 - **FR-002**: The page MUST display the date as "Chủ nhật, 17.01.2027" with the secondary line
   "Nhằm ngày 10 tháng Chạp năm Bính Ngọ", and the party time 14:00.
-- **FR-003**: The countdown MUST target 14:00 on 17/01/2027 in Vietnam time (UTC+7), update every
+- **FR-003**: The countdown MUST target 14:00 on 17/01/2027 in Vietnam time (UTC+7), show the
+  remaining days, hours and minutes as one sentence ("Còn N ngày N giờ N phút nữa"; under one day
+  "Còn N giờ N phút nữa"; under one minute "Còn chưa đầy 1 phút nữa"), recalculate every
   second, be independent of the visitor's device time zone, and show an "arrived/passed" message
   once the target is reached.
 - **FR-004**: Party information MUST show venue name, address, an embedded map, and a link that
@@ -182,10 +185,11 @@ log reflect the edit.
 
 **RSVP**
 
-- **FR-011**: After a guest is selected, the form MUST ask "Có đi tiệc?" (Có/Không). The people
+- **FR-011**: After a guest is selected, the form MUST ask whether the guest attends ("Bạn có đến dự tiệc không?":
+  "Có, mình sẽ đến" / "Không đến được"). The people
   and bus fields MUST be shown only when "Có" is selected.
 - **FR-012**: When attending, the form MUST require "Số người đi tiệc" as a whole number 1–10, and
-  ask "Đi xe chiều đi?" and "Đi xe chiều về?" (Có/Không each). When a direction is "Có", its seat
+  ask "Đi xe khách chiều đi?" and "Đi xe khách chiều về?" (Có/Không each). When a direction is "Có", its seat
   count MUST be a whole number 1–10 and not greater than the number of people.
 - **FR-013**: The same rules as FR-011/FR-012 MUST be enforced again on the server; invalid
   submissions MUST be rejected without writing anything, and the guest shown an error.
