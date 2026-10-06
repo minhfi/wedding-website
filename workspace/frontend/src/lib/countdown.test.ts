@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { formatRemaining, getRemaining } from "./countdown";
+import { getRemaining } from "./countdown";
 
 const TARGET_ISO = "2027-01-17T14:00:00+07:00";
 // 14:00 at UTC+7 is 07:00 UTC.
@@ -95,40 +95,5 @@ describe("getRemaining is independent of the device time zone", () => {
     const vnHour = new Date(TARGET_MS).getHours();
     expect(utcHour).toBe(7);
     expect(vnHour).toBe(14);
-  });
-});
-
-describe("formatRemaining", () => {
-  it("shows days, hours and minutes when at least one day remains", () => {
-    expect(
-      formatRemaining({ passed: false, days: 3, hours: 4, minutes: 5, seconds: 6 }),
-    ).toBe("Còn 3 ngày 4 giờ 5 phút nữa");
-  });
-
-  it("keeps zero hours and minutes when days remain", () => {
-    expect(
-      formatRemaining({ passed: false, days: 1, hours: 0, minutes: 0, seconds: 0 }),
-    ).toBe("Còn 1 ngày 0 giờ 0 phút nữa");
-  });
-
-  it("omits days when less than one day remains", () => {
-    expect(
-      formatRemaining({ passed: false, days: 0, hours: 2, minutes: 15, seconds: 59 }),
-    ).toBe("Còn 2 giờ 15 phút nữa");
-  });
-
-  it("shows zero hours when only minutes remain", () => {
-    expect(
-      formatRemaining({ passed: false, days: 0, hours: 0, minutes: 1, seconds: 0 }),
-    ).toBe("Còn 0 giờ 1 phút nữa");
-  });
-
-  it("shows the under-a-minute text when less than one minute remains", () => {
-    expect(
-      formatRemaining({ passed: false, days: 0, hours: 0, minutes: 0, seconds: 59 }),
-    ).toBe("Còn chưa đầy 1 phút nữa");
-    expect(
-      formatRemaining({ passed: false, days: 0, hours: 0, minutes: 0, seconds: 0 }),
-    ).toBe("Còn chưa đầy 1 phút nữa");
   });
 });

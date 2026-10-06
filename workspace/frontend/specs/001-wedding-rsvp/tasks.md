@@ -148,6 +148,14 @@ UI task rules above apply (agent-browser at 360/768/1280 + web-design-guidelines
 - [x] T044 MP-1 TDD background decoration `src/components/BackgroundBotanicals.tsx` (+ test): fixed, full-viewport, `aria-hidden`, `pointer-events-none`, `-z-10` layer composed from `src/components/botanical/Botanicals.tsx` shapes (large branches/leaves/blooms) at ~10–20% opacity via token colors; corners only below 1280 px, side-margin sprigs at ≥1280 px (changed from 1024 after review); render it once in `src/app/page.tsx` (or layout) and add the desktop `lua` panel behind the sticky hero column; no hard-coded hex.
 - [x] T045 MP-1 Verify T044 with agent-browser (via next-dev-loop) at 360/768/1024/1440 px: decoration visible but faint, never overlapping form controls on mobile, text contrast unchanged, no horizontal scroll; web-design-guidelines on changed files; full verify (lint, typecheck, test, build).
 
+## Phase 9: Change — four-box countdown with seconds (MP-1)
+
+**Reason**: owner request "thêm giúp tôi countdown"; chose "4 ô số có viền" (2026-10-06). FR-003
+and US2 AC3 updated. UI task rules above apply.
+
+- [x] T046 MP-1 TDD four-box countdown in `src/components/Countdown.tsx` (+ `src/components/Countdown.test.tsx`): four bordered boxes (`bg-lua`, `lg:bg-canh-hoa` on the desktop panel, `border-nu`, `rounded-control`) each with a number (serif, light, `tabular-nums`, zero-padded hours/minutes/seconds to 2 digits) and a label (ngày, giờ, phút, giây); updates every second; placeholder boxes ("–") before mount with the same size; arrived message "Ngày vui đã đến" once passed; `role="timer"` with an accessible label sentence including seconds; no layout shift; fits 360 px.
+- [x] T047 MP-1 Verify T046 with agent-browser (via next-dev-loop) at 360/1024/1440 px (ticking seconds, no overflow), web-design-guidelines on Countdown.tsx, full verify (lint, typecheck, test, build).
+
 ## Dependencies & Execution Order
 
 - **Setup** T001 → T002 → T003.
@@ -255,3 +263,13 @@ UI task rules above apply (agent-browser at 360/768/1280 + web-design-guidelines
   at 1024–1279 px); class order nit fixed; size/iOS toolbar shift/mobile overlap recorded as
   accepted deviations in spec.
 - Verify: lint 0, typecheck 0, 383/383 tests, build OK.
+
+### Phase 9 verification (2026-10-06, agent-browser via next-dev-loop)
+
+- 360/1440 px: four boxes (ngày/giờ/phút/giây) tick every second; timer label read twice one
+  second apart ("…31 giây" → "…30 giây"); no horizontal scroll.
+- Desktop hero still fits with the taller countdown: 1280×620 timer bottom 578, 1280×700 → 658.
+- Guidelines self-review: boxes `aria-hidden`, one `role="timer"` with a full Vietnamese label and
+  `aria-live="off"`; zero-padded `tabular-nums` (no jitter); placeholder boxes same size (no shift);
+  `da`/`than` on `lua`/`canh-hoa` AA. Removed the now-unused `formatRemaining` helper and its tests.
+- Verify: lint 0, typecheck 0, all tests pass, build OK.

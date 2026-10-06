@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { siteConfig } from "@/config/site";
@@ -12,11 +12,24 @@ const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-const PLACEHOLDER = "Đếm ngược đến ngày cưới";
 const ARRIVED = "Ngày vui đã đến";
 
-function getCountdown(): HTMLElement {
+function getTimer(): HTMLElement {
   return screen.getByTestId("countdown");
+}
+
+/** Number shown in the box whose label is `label` (e.g. "ngày"). */
+function boxValue(label: string): string {
+  const box = screen.getByText(label).closest("[data-unit]");
+  if (!(box instanceof HTMLElement)) {
+    throw new Error(`no box for ${label}`);
+  }
+  return within(box).getByTestId("value").textContent ?? "";
+}
+
+function renderAt(nowMs: number) {
+  vi.setSystemTime(nowMs);
+  return render(<Countdown targetIso={TARGET_ISO} />);
 }
 
 describe("Countdown", () => {
@@ -28,90 +41,96 @@ describe("Countdown", () => {
     vi.useRealTimers();
   });
 
-  it("renders a neutral placeholder before mount (server render)", () => {
-    vi.setSystemTime(TARGET_MS - 2 * DAY);
+  it("server-renders four placeholder boxes without reading the time", () => {
+    vi.setSystemTime(TARGET_MS - DAY);
     const html = renderToString(<Countdown targetIso={TARGET_ISO} />);
-    expect(html).toContain(PLACEHOLDER);
-    expect(html).not.toContain("Còn");
+
+    expect(html).toContain("ngày");
+    expect(html).toContain("giây");
+    expect(html.match(/data-unit=/g)).toHaveLength(4);
+    expect(html).toContain("–");
+    expect(html).not.toMatch(/>\d+</);
   });
 
-  it("shows the remaining time as a sentence after mount", () => {
-    vi.setSystemTime(TARGET_MS - (3 * DAY + 4 * HOUR + 5 * MINUTE + 6 * SECOND));
-    render(<Countdown targetIso={TARGET_ISO} />);
-    expect(getCountdown()).toHaveTextContent("Còn 3 ngày 4 giờ 5 phút nữa");
+  it("shows days, hours, minutes and seconds in labelled boxes after mount", () => {
+    renderAt(TARGET_MS - (3 * DAY + 4 * HOUR + 5 * MINUTE + 6 * SECOND));
+
+    expect(boxValue("ngày")).toBe("3");
+    expect(boxValue("giờ")).toBe("04");
+    expect(boxValue("phút")).toBe("05");
+    expect(boxValue("giây")).toBe("06");
   });
 
-  it("updates every second so minutes roll over", () => {
-    vi.setSystemTime(TARGET_MS - (1 * DAY + 2 * HOUR + 3 * MINUTE));
-    render(<Countdown targetIso={TARGET_ISO} />);
-    expect(getCountdown()).toHaveTextContent("Còn 1 ngày 2 giờ 3 phút nữa");
+  it("ticks every second and rolls minutes over", () => {
+    renderAt(TARGET_MS - (1 * DAY + 2 * HOUR + 3 * MINUTE + 1 * SECOND));
+    expect(boxValue("giây")).toBe("01");
 
     act(() => {
       vi.advanceTimersByTime(SECOND);
     });
-    expect(getCountdown()).toHaveTextContent("Còn 1 ngày 2 giờ 2 phút nữa");
+    expect(boxValue("giây")).toBe("00");
+    expect(boxValue("phút")).toBe("03");
+
+    act(() => {
+      vi.advanceTimersByTime(SECOND);
+    });
+    expect(boxValue("giây")).toBe("59");
+    expect(boxValue("phút")).toBe("02");
   });
 
-  it("does not announce every tick to screen readers", () => {
-    vi.setSystemTime(TARGET_MS - DAY);
-    render(<Countdown targetIso={TARGET_ISO} />);
-    expect(getCountdown()).toHaveAttribute("aria-live", "off");
+  it("exposes a timer with a full Vietnamese label and no per-second announcements", () => {
+    renderAt(TARGET_MS - (2 * DAY + 3 * HOUR + 4 * MINUTE + 5 * SECOND));
+
+    const timer = screen.getByRole("timer");
+    expect(timer).toHaveAccessibleName("Còn 2 ngày 3 giờ 4 phút 5 giây");
+    expect(timer).toHaveAttribute("aria-live", "off");
+  });
+
+  it("uses tabular light serif figures and bordered token boxes", () => {
+    renderAt(TARGET_MS - DAY);
+
+    const boxes = getTimer().querySelectorAll("[data-unit]");
+    expect(boxes).toHaveLength(4);
+    for (const box of boxes) {
+      expect(box).toHaveClass("border", "border-nu", "bg-lua", "lg:bg-canh-hoa", "rounded-control");
+      expect(within(box as HTMLElement).getByTestId("value")).toHaveClass(
+        "font-serif",
+        "font-light",
+        "tabular-nums",
+      );
+    }
   });
 
   it("shows the arrived message once the target has passed", () => {
-    vi.setSystemTime(TARGET_MS + MINUTE);
-    render(<Countdown targetIso={TARGET_ISO} />);
-    expect(getCountdown()).toHaveTextContent(ARRIVED);
+    renderAt(TARGET_MS + MINUTE);
+
+    expect(getTimer()).toHaveTextContent(ARRIVED);
+    expect(getTimer().querySelectorAll("[data-unit]")).toHaveLength(0);
   });
 
   it("switches to the arrived message when the target is reached while open", () => {
-    vi.setSystemTime(TARGET_MS - SECOND);
-    render(<Countdown targetIso={TARGET_ISO} />);
-    expect(getCountdown()).toHaveTextContent("Còn chưa đầy 1 phút nữa");
+    renderAt(TARGET_MS - 2 * SECOND);
+    expect(boxValue("giây")).toBe("02");
 
     act(() => {
-      vi.advanceTimersByTime(SECOND);
+      vi.advanceTimersByTime(2 * SECOND);
     });
-    expect(getCountdown()).toHaveTextContent(ARRIVED);
+    expect(getTimer()).toHaveTextContent(ARRIVED);
   });
 
   it("clears its interval on unmount", () => {
-    vi.setSystemTime(TARGET_MS - DAY);
-    const { unmount } = render(<Countdown targetIso={TARGET_ISO} />);
+    const { unmount } = renderAt(TARGET_MS - DAY);
     expect(vi.getTimerCount()).toBeGreaterThan(0);
 
     unmount();
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it("keeps placeholder, live and arrived text in the same pill", () => {
-    vi.setSystemTime(TARGET_MS - DAY);
-    const html = renderToString(<Countdown targetIso={TARGET_ISO} />);
-    expect(html).toMatch(/class="[^"]*rounded-full[^"]*"[^>]*><span>Đếm ngược/);
-
-    render(<Countdown targetIso={TARGET_ISO} />);
-    const pill = getCountdown();
-    expect(pill).toHaveClass("inline-flex", "rounded-full", "bg-lua", "border", "border-nu");
-
-    act(() => {
-      vi.setSystemTime(TARGET_MS + MINUTE);
-      vi.advanceTimersByTime(SECOND);
-    });
-    expect(getCountdown()).toBe(pill);
-    expect(pill).toHaveTextContent(ARRIVED);
-  });
-
-  it("renders numbers in weight 500 with tabular figures", () => {
-    vi.setSystemTime(TARGET_MS - (3 * DAY + 4 * HOUR + 5 * MINUTE));
-    render(<Countdown targetIso={TARGET_ISO} />);
-    const days = screen.getByText("3");
-    expect(days).toHaveClass("font-medium", "tabular-nums");
-  });
-
   it("defaults to siteConfig.eventAt", () => {
-    const eventMs = Date.parse(siteConfig.eventAt);
-    vi.setSystemTime(eventMs - (2 * DAY + 3 * HOUR + 4 * MINUTE));
+    vi.setSystemTime(Date.parse(siteConfig.eventAt) - (5 * DAY + 30 * SECOND));
     render(<Countdown />);
-    expect(getCountdown()).toHaveTextContent("Còn 2 ngày 3 giờ 4 phút nữa");
+
+    expect(boxValue("ngày")).toBe("5");
+    expect(boxValue("giây")).toBe("30");
   });
 });

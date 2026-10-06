@@ -78,9 +78,8 @@ with the configured content and that the countdown ticks.
 2. **Given** the page loads, **Then** the date reads "Chủ nhật, 17.01.2027" prominently with
    the line "Nhằm ngày 10 tháng Chạp năm Bính Ngọ" beneath it, and the party time reads 14:00.
 3. **Given** the current time is before 14:00 17/01/2027 Vietnam time (UTC+7), **Then** the
-   countdown shows the remaining time as a sentence ("Còn N ngày N giờ N phút nữa", per the
-   approved visual direction; no seconds), recalculated every second, correctly regardless of the
-   visitor's device time zone.
+   countdown shows four boxes with days, hours, minutes and seconds remaining, updating every
+   second, correctly regardless of the visitor's device time zone.
 4. **Given** the countdown target has passed, **Then** the countdown is replaced by a message
    that the wedding day has arrived/passed instead of showing negative numbers.
 5. **Given** the party information section, **Then** it shows venue name, address, an embedded
@@ -156,11 +155,11 @@ log reflect the edit.
   wedding date; countdown; party information; bus information; RSVP form; wedding gift QR.
 - **FR-002**: The page MUST display the date as "Chủ nhật, 17.01.2027" with the secondary line
   "Nhằm ngày 10 tháng Chạp năm Bính Ngọ", and the party time 14:00.
-- **FR-003**: The countdown MUST target 14:00 on 17/01/2027 in Vietnam time (UTC+7), show the
-  remaining days, hours and minutes as one sentence ("Còn N ngày N giờ N phút nữa"; under one day
-  "Còn N giờ N phút nữa"; under one minute "Còn chưa đầy 1 phút nữa"), recalculate every
-  second, be independent of the visitor's device time zone, and show an "arrived/passed" message
-  once the target is reached.
+- **FR-003**: The countdown MUST target 14:00 on 17/01/2027 in Vietnam time (UTC+7) and show four
+  bordered boxes — days ("ngày"), hours ("giờ"), minutes ("phút"), seconds ("giây") — updating every
+  second, independent of the visitor's device time zone, and show an "arrived/passed" message once
+  the target is reached. (Changed 2026-10-06 at the owner's request: replaces the earlier sentence
+  pill "Còn N ngày N giờ N phút nữa".)
 - **FR-004**: Party information MUST show venue name, address, an embedded map, and a link that
   opens the location in a maps app.
 - **FR-005**: Couple names, date, time, venue details, map link, cover image, and gift QR content

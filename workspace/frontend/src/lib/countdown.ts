@@ -31,15 +31,3 @@ export function getRemaining(targetMs: number, nowMs: number): Countdown {
     seconds: Math.floor((diff % MINUTE_MS) / SECOND_MS),
   };
 }
-
-/** Vietnamese summary of the remaining time, without seconds. */
-export function formatRemaining(remaining: RemainingTime): string {
-  const { days, hours, minutes } = remaining;
-  if (days > 0) {
-    return `Còn ${days} ngày ${hours} giờ ${minutes} phút nữa`;
-  }
-  if (hours > 0 || minutes > 0) {
-    return `Còn ${hours} giờ ${minutes} phút nữa`;
-  }
-  return "Còn chưa đầy 1 phút nữa";
-}
