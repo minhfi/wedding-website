@@ -11,7 +11,7 @@ export function CoupleDateSection({ children }: CoupleDateSectionProps) {
   const { groom, bride, dateText, timeText, lunarText, eventAt } = siteConfig;
 
   return (
-    <section className="relative z-10 -mt-12 pr-gutter pl-stem">
+    <section className="relative pt-6 pr-gutter pl-stem">
       <div
         aria-hidden="true"
         className="absolute top-0 bottom-0 left-gutter w-px origin-top bg-la-non motion-safe:animate-stem-grow"
