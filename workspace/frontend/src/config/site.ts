@@ -46,7 +46,7 @@ export const siteConfig: SiteConfig = {
   },
   cover: {
     src: null,
-    alt: "Ảnh cưới của Minh Phi và Mỹ Ngân",
+    alt: "Ảnh cưới của Mỹ Ngân và Minh Phi",
   },
   qr: {
     src: "/qr.png",

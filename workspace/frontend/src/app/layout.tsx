@@ -17,9 +17,9 @@ const beVietnamPro = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "Phi & Ngân — 17.01.2027",
+  title: "Ngân & Phi — 17.01.2027",
   description:
-    "Thiệp cưới Minh Phi và Mỹ Ngân — Chủ nhật, 17.01.2027. Xác nhận tham dự và đăng ký xe khách.",
+    "Thiệp cưới Mỹ Ngân và Minh Phi — Chủ nhật, 17.01.2027. Xác nhận tham dự và đăng ký xe khách.",
 };
 
 export const viewport: Viewport = {

@@ -299,7 +299,7 @@ is the single bold element; everything else stays quiet.
 
 **Layout (360px)**: content left-aligned, 24px outer gutter, content indented to 44px from the stem.
 1. Cover: full-bleed photo 4:5.
-2. Names stacked "Minh Phi / và / Mỹ Ngân", overlapping the bottom ~56px of the cover; below them
+2. Names stacked "Mỹ Ngân / và / Minh Phi" (bride first, changed 2026-10-08), placed below the cover; below them
    "Chủ nhật, 17.01.2027" + time (500), then the lunar line in `da`.
 3. Countdown as a sentence: "Còn N ngày N giờ N phút nữa" (no digit boxes).
 4. Party: bud + heading, venue name, address, rounded map embed, "Mở bản đồ" link.
@@ -408,3 +408,14 @@ margins (option A of A/B/C). Rules:
 - agent-browser on the real Sheet: V1–V8, V10–V12 passed (details in `tasks.md` → Build log).
 - Manual, pending owner confirmation: T020 / T031 (Sheet rows), T028 (bus info freshness),
   T034 (Vercel deploy and real-phone check).
+
+## Change: name order — bride first
+
+- **Reason:** owner request (2026-10-08): "Sửa lại để tên Ngân trước Phi".
+- **Before:** names shown groom first ("Minh Phi và Mỹ Ngân"; page title "Phi & Ngân — 17.01.2027").
+- **After:** bride first everywhere the couple is named: h1 "Mỹ Ngân / và / Minh Phi", page title
+  "Ngân & Phi — 17.01.2027", meta description and cover image alt "… Mỹ Ngân và Minh Phi". The QR
+  account holder (bank data) is unchanged.
+- **Acceptance criteria:** the h1 accessible name is "Mỹ Ngân và Minh Phi"; the document title is
+  "Ngân & Phi — 17.01.2027".
+- **Affected requirements:** none (copy only); Implementation notes → Visual direction item 2 updated.

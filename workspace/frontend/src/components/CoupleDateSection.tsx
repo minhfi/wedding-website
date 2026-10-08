@@ -17,12 +17,12 @@ export function CoupleDateSection({ children }: CoupleDateSectionProps) {
         className="absolute top-0 bottom-0 left-gutter w-px origin-top bg-la-non motion-safe:animate-stem-grow"
       />
       <h1 className="font-serif text-names font-extralight text-than">
-        <span className="block">{groom.shortName}</span>{" "}
+        <span className="block">{bride.shortName}</span>{" "}
         <span className="flex items-center gap-3">
           <span className="text-names-join text-la-dam">và</span>
           <LeafSprig />
         </span>{" "}
-        <span className="block">{bride.shortName}</span>
+        <span className="block">{groom.shortName}</span>
       </h1>
       <p className="mt-6 text-lg font-medium text-than">
         <time dateTime={eventAt}>

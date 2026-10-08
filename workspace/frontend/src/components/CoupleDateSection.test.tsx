@@ -8,7 +8,7 @@ describe("CoupleDateSection", () => {
     render(<CoupleDateSection />);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Minh Phi và Mỹ Ngân" }),
+      screen.getByRole("heading", { level: 1, name: "Mỹ Ngân và Minh Phi" }),
     ).toBeInTheDocument();
   });
 
