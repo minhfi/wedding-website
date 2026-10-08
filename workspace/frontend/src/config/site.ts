@@ -27,7 +27,16 @@ export interface SiteConfig {
     accountHolder: string;
     bankName: string;
   };
+  /** Wedding film. Swap both URLs for a YouTube unlisted embed if Drive limits playback. */
+  video: {
+    title: string;
+    embedUrl: string;
+    watchUrl: string;
+  };
 }
+
+// Google Drive file id of "Phi-Ngan-Wedding-Film.mp4" (shared as "Anyone with the link").
+const weddingFilmDriveId = "13Kdgk5WeoSGdL8nijg1mxYBJNxNIf6Fm";
 
 // Placeholder venue address; replace with the real one before launch.
 const venueAddress = "123 Đường ABC, Phường XYZ, TP. Hồ Chí Minh";
@@ -53,5 +62,10 @@ export const siteConfig: SiteConfig = {
     alt: "Mã QR chuyển khoản mừng cưới",
     accountHolder: "NGUYEN MINH PHI",
     bankName: "Ngân hàng (cập nhật sau)",
+  },
+  video: {
+    title: "Chuyện của chúng mình",
+    embedUrl: `https://drive.google.com/file/d/${weddingFilmDriveId}/preview`,
+    watchUrl: `https://drive.google.com/file/d/${weddingFilmDriveId}/view`,
   },
 };

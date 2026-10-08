@@ -93,6 +93,9 @@
   .stem-sequence > :nth-child(4 of section) {
     --stem-delay: 0.6s;
   }
+  .stem-sequence > :nth-child(5 of section) {
+    --stem-delay: 0.75s;
+  }
 }
 
 @layer base {

@@ -34,4 +34,14 @@ describe("siteConfig", () => {
     expect(siteConfig.cover.alt).not.toBe("");
     expect(siteConfig.qr.src).toBe("/qr.png");
   });
+
+  it("embeds the wedding film from its Google Drive preview URL", () => {
+    expect(siteConfig.video.title).toBe("Chuyện của chúng mình");
+    expect(siteConfig.video.embedUrl).toBe(
+      "https://drive.google.com/file/d/13Kdgk5WeoSGdL8nijg1mxYBJNxNIf6Fm/preview",
+    );
+    expect(siteConfig.video.watchUrl).toBe(
+      "https://drive.google.com/file/d/13Kdgk5WeoSGdL8nijg1mxYBJNxNIf6Fm/view",
+    );
+  });
 });

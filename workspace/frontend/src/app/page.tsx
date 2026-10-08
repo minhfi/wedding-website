@@ -8,6 +8,7 @@ import { CoverSection } from "@/components/CoverSection";
 import { GiftQrSection } from "@/components/GiftQrSection";
 import { PartyInfoSection } from "@/components/PartyInfoSection";
 import { RsvpSection } from "@/components/rsvp/RsvpSection";
+import { VideoSection } from "@/components/VideoSection";
 
 export default function Home() {
   // `isolate` makes <main> a stacking context, so the fixed `-z-10` background paints above the body
@@ -29,6 +30,7 @@ export default function Home() {
         </div>
       </div>
       <div className="stem-sequence lg:pt-16">
+        <VideoSection />
         <PartyInfoSection />
         <Suspense fallback={<BusInfoSkeleton />}>
           <BusInfoSection />

@@ -156,6 +156,14 @@ and US2 AC3 updated. UI task rules above apply.
 - [x] T046 MP-1 TDD four-box countdown in `src/components/Countdown.tsx` (+ `src/components/Countdown.test.tsx`): four bordered boxes (`bg-lua`, `lg:bg-canh-hoa` on the desktop panel, `border-nu`, `rounded-control`) each with a number (serif, light, `tabular-nums`, zero-padded hours/minutes/seconds to 2 digits) and a label (ngày, giờ, phút, giây); updates every second; placeholder boxes ("–") before mount with the same size; arrived message "Ngày vui đã đến" once passed; `role="timer"` with an accessible label sentence including seconds; no layout shift; fits 360 px.
 - [x] T047 MP-1 Verify T046 with agent-browser (via next-dev-loop) at 360/1024/1440 px (ticking seconds, no overflow), web-design-guidelines on Countdown.tsx, full verify (lint, typecheck, test, build).
 
+## Phase 10: Change — wedding film video (MP-1)
+
+**Reason**: owner request (2026-10-08), choices: after the hero, Google Drive embed, title
+"Chuyện của chúng mình". UI task rules above apply.
+
+- [x] T048 MP-1 TDD video section: add `video: { title, embedUrl, watchUrl }` to `src/config/site.ts` (+ `site.test.ts`), new `src/components/VideoSection.tsx` (+ `VideoSection.test.tsx`) using `SectionFrame` (bloom `bud`, heading "Chuyện của chúng mình") with a 16:9 `iframe` (`title`, `allow="autoplay; fullscreen"`, `allowFullScreen`, `loading="lazy"`, `rounded-control border border-nu`) and a "Xem video trên Google Drive" link (`target="_blank" rel="noopener noreferrer"`); render it first in the right column of `src/app/page.tsx`; extend the stem stagger in `src/app/globals.css` to five sections.
+- [x] T049 MP-1 Verify T048 with agent-browser at 360/1024/1440 px (player loads, no overflow), web-design-guidelines on changed files, full verify (lint, typecheck, test, build).
+
 ## Dependencies & Execution Order
 
 - **Setup** T001 → T002 → T003.
@@ -273,3 +281,15 @@ and US2 AC3 updated. UI task rules above apply.
   `aria-live="off"`; zero-padded `tabular-nums` (no jitter); placeholder boxes same size (no shift);
   `da`/`than` on `lua`/`canh-hoa` AA. Removed the now-unused `formatRemaining` helper and its tests.
 - Verify: lint 0, typecheck 0, all tests pass, build OK.
+
+### Phase 10 verification (2026-10-08, agent-browser via next-dev-loop)
+
+- `get_compilation_issues` → none. Section "Chuyện của chúng mình" renders right after the hero
+  (first in the right column on desktop); iframe 292×164 at 360 px and 508×286 at 1440 px (16:9);
+  no horizontal scroll.
+- The Drive player loads but Google currently shows "This video file is still being processed for
+  playback" — a Drive-side state for the uploaded file, not an app error; it plays once Drive
+  finishes processing. Fallback link "Xem video trên Google Drive" opens the file in a new tab.
+- Guidelines self-review: iframe has a Vietnamese `title`, lazy loading, full-screen allowed; link
+  ≥44 px tall, new-tab cue for screen readers, hover state; tokens only.
+- Verify: lint 0, typecheck 0, 381/381 tests, build OK.

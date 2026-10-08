@@ -152,7 +152,7 @@ log reflect the edit.
 **Page & content**
 
 - **FR-001**: The site MUST be a single page containing, in order: cover image; couple names and
-  wedding date; countdown; party information; bus information; RSVP form; wedding gift QR.
+  wedding date; countdown; wedding film video; party information; bus information; RSVP form; wedding gift QR.
 - **FR-002**: The page MUST display the date as "Chủ nhật, 17.01.2027" with the secondary line
   "Nhằm ngày 10 tháng Chạp năm Bính Ngọ", and the party time 14:00.
 - **FR-003**: The countdown MUST target 14:00 on 17/01/2027 in Vietnam time (UTC+7) and show four
@@ -167,6 +167,11 @@ log reflect the edit.
   content is supplied).
 - **FR-005a**: The gift section MUST show exactly one shared QR code together with the account
   holder's name and the bank name.
+- **FR-005b**: The page MUST include a video section titled "Chuyện của chúng mình" placed right
+  after the names/date/countdown (first section of the right column on desktop), embedding the
+  wedding film from a configurable URL (currently the Google Drive preview of
+  "Phi-Ngan-Wedding-Film.mp4"), with a 16:9 player, full-screen allowed, lazy loading, and a fallback
+  link that opens the video in a new tab.
 - **FR-006**: Bus information (outbound pickup point and departure time; return departure point
   and time) MUST be read from the owner's spreadsheet bus settings and shown in the bus section.
 - **FR-007**: All guest-facing text MUST be in Vietnamese.
@@ -432,3 +437,19 @@ margins (option A of A/B/C). Rules:
 - **Acceptance criteria:** at 1024 and 1440 px the arch and countdown are horizontally centred in
   the panel; mobile unchanged.
 - **Affected requirements:** none (layout only).
+
+## Change: wedding film video section
+
+- **Reason:** owner request (2026-10-08): add the wedding film hosted on Google Drive.
+- **Before:** no video on the page.
+- **After:** a "Chuyện của chúng mình" section after the hero (before "Tiệc cưới") embeds the Drive
+  preview player (`https://drive.google.com/file/d/<id>/preview`) in a 16:9 rounded frame with a
+  "Xem video trên Google Drive" link; the URL lives in `siteConfig.video` so it can later be swapped
+  for a YouTube unlisted embed without UI changes.
+- **Acceptance criteria:** the section heading is "Chuyện của chúng mình"; the iframe has a
+  Vietnamese title, `allowfullscreen`, `loading="lazy"`, and the configured `src`; the fallback link
+  opens in a new tab; no horizontal scroll at 360 px.
+- **Affected requirements:** FR-001 (section order now includes the video after the hero), FR-005b
+  (new).
+- **Known limitation:** Drive embeds use Google's player UI, cannot autoplay, and may show a
+  "too many views" notice under heavy traffic; mitigation is switching to YouTube unlisted.
