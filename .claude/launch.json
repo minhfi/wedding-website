@@ -4,8 +4,23 @@
     {
       "name": "frontend-dev",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--dir", "workspace/frontend", "dev"],
+      "runtimeArgs": [
+        "--dir",
+        "workspace/frontend",
+        "dev"
+      ],
       "port": 3000
+    },
+    {
+      "name": "frontend-dev-auto",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "workspace/frontend",
+        "dev"
+      ],
+      "port": 3002,
+      "autoPort": true
     }
   ]
 }
