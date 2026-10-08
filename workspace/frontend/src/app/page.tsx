@@ -18,7 +18,7 @@ export default function Home() {
       {/* Hero: sticky left column on desktop, on a soft panel. The cover width is capped so the whole hero fits one screen. */}
       <div className="lg:sticky lg:top-0 lg:h-dvh lg:py-gutter">
         <div className="lg:flex lg:h-full lg:flex-col lg:justify-center-safe lg:rounded-panel lg:bg-lua lg:pb-gutter">
-          <div className="lg:max-w-hero-cover">
+          <div className="lg:mx-auto lg:w-full lg:max-w-hero-cover">
             <CoverSection />
           </div>
           <CoupleDateSection>

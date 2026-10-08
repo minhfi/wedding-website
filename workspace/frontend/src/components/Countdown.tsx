@@ -61,7 +61,7 @@ export function Countdown({ targetIso = siteConfig.eventAt }: CountdownProps) {
       role="timer"
       aria-live="off"
       aria-label={countdown ? accessibleLabel(countdown) : "Đếm ngược đến ngày cưới"}
-      className="grid max-w-sm grid-cols-4 gap-2"
+      className="grid max-w-sm grid-cols-4 gap-2 lg:mx-auto"
     >
       {UNITS.map(({ key, label }) => (
         <div

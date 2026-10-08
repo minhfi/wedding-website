@@ -11,14 +11,14 @@ export function CoupleDateSection({ children }: CoupleDateSectionProps) {
   const { groom, bride, dateText, timeText, lunarText, eventAt } = siteConfig;
 
   return (
-    <section className="relative pt-6 pr-gutter pl-stem">
+    <section className="relative pt-6 pr-gutter pl-stem lg:px-gutter lg:text-center">
       <div
         aria-hidden="true"
-        className="absolute top-0 bottom-0 left-gutter w-px origin-top bg-la-non motion-safe:animate-stem-grow"
+        className="absolute top-0 bottom-0 left-gutter w-px origin-top bg-la-non motion-safe:animate-stem-grow lg:hidden"
       />
       <h1 className="font-serif text-names font-extralight text-than">
         <span className="block">{bride.shortName}</span>{" "}
-        <span className="flex items-center gap-3">
+        <span className="flex items-center gap-3 lg:justify-center">
           <span className="text-names-join text-la-dam">và</span>
           <LeafSprig />
         </span>{" "}

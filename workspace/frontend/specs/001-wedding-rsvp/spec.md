@@ -419,3 +419,16 @@ margins (option A of A/B/C). Rules:
 - **Acceptance criteria:** the h1 accessible name is "Mỹ Ngân và Minh Phi"; the document title is
   "Ngân & Phi — 17.01.2027".
 - **Affected requirements:** none (copy only); Implementation notes → Visual direction item 2 updated.
+
+## Change: desktop hero centred
+
+- **Reason:** owner feedback (2026-10-08): with the taller four-box countdown, the cover and text sat
+  left-aligned inside the desktop panel and looked off-centre.
+- **Before:** on ≥1024 px the arch, names, date and countdown were left-aligned in the `lua` panel,
+  with the stem segment on the left.
+- **After:** on ≥1024 px the arch, names (incl. the "và" sprig row), date, lunar line and countdown
+  are centred in the panel and the hero's stem segment is hidden there; below 1024 px the layout is
+  unchanged (left-aligned with the stem). The right column keeps its stem.
+- **Acceptance criteria:** at 1024 and 1440 px the arch and countdown are horizontally centred in
+  the panel; mobile unchanged.
+- **Affected requirements:** none (layout only).
